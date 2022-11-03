@@ -1,7 +1,5 @@
 # Base Neural Network
 
-## v1.0.0
-
 ---
 
 This project contains a Network.java and Layer.java file for the source code. These two files are made to be versatile and fit to any need.
