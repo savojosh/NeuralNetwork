@@ -13,16 +13,11 @@ One question that may be raised, "why Java as opposed to, for example, Python?" 
 Going away from future plans for this project, the data folder contains an "EXAMPLE-Network_001." This folder does not contain a network, but rather exemplifies how the save files are structured.
 
 P.S. Some notable videos that I watched to better understand neural networks are below:
-https://www.youtube.com/watch?v=hfMk-kjRv4c
-- Gave me example problems to solve using the neural network.
-https://www.youtube.com/watch?v=e5xKayCBOeU
-- Provides a real neat abstraction using a piece of paper.
-https://www.youtube.com/watch?v=piF6D6CQxUw
-- Helped with understanding the key concepts behind neural networks.
-https://www.youtube.com/watch?v=w8yWXqWQYmU
-- The math.
-https://www.youtube.com/watch?v=CqOfi41LfDw
-- Explains neural networks in really basic terms.
+- Gave me example problems to solve using the neural network. https://www.youtube.com/watch?v=hfMk-kjRv4c
+- Provides a real neat abstraction using a piece of paper. https://www.youtube.com/watch?v=e5xKayCBOeU
+- Helped with understanding the key concepts behind neural networks. https://www.youtube.com/watch?v=piF6D6CQxUw
+- The math. https://www.youtube.com/watch?v=w8yWXqWQYmU
+- Explains neural networks in really basic terms. https://www.youtube.com/watch?v=CqOfi41LfDw
 
 ---
 
