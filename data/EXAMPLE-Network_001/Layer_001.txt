@@ -1,0 +1,6 @@
+SIGMOID
+node0,bias0:weight00,weight10,weight20,...,weightn0
+node1,bias1:weight01,weight11,weight21,...,weightn1
+node2,bias2:weight02,weight12,weight22,...,weightn2
+...
+noden,biasn:weight0n,weight1n,weight2n,...,weightnn
