@@ -13,7 +13,7 @@ import java.util.Scanner;
  * Serves as a group of nodes taking in a certain number of inputs and returning a certain number of outputs.
  * These groupings of nodes can be understood as the "curve" of a line where each node is a value on that line.
  * 
- * @author savojosh
+ * @author Joshua Savoie
  */
 public class Layer {
 
@@ -419,6 +419,15 @@ public class Layer {
      */
     public int getLayerSize() {
         return m_layerSize;
+    }
+
+    /**
+     * getFunction()
+     * 
+     * @return
+     */
+    public Functions getFunction() {
+        return m_function;
     }
 
 }

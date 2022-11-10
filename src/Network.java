@@ -10,7 +10,7 @@ import java.io.File;
  * Serves as a group of layers that work together to evaluate given inputs and calculate the best possible
  * decision from those given inputs.
  * 
- * @author savojosh
+ * @author Joshua Savoie
  */
 public class Network {
     
