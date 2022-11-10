@@ -100,6 +100,15 @@ public class MnistDatabase {
     }
 
     /**
+     * getTrainingDatasetSize()
+     * 
+     * @return
+     */
+    public int getTrainingDatasetSize() {
+        return training.length;
+    }
+
+    /**
      * getTestingImageLabel()
      * 
      * Returns the label for an image in the testing dataset.
@@ -140,6 +149,15 @@ public class MnistDatabase {
 
         return pixels;
         
+    }
+
+    /**
+     * getTestingDatasetSize()
+     * 
+     * @return
+     */
+    public int getTestingDatasetSize() {
+        return testing.length;
     }
     
 }

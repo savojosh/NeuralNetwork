@@ -18,6 +18,8 @@ public abstract class Trainer implements Runnable {
     private final int m_networkID;
     private final Network m_network;
 
+    private volatile boolean stopped;
+
     private String m_manifestFolder;
     private int m_evolution;
 
@@ -40,6 +42,8 @@ public abstract class Trainer implements Runnable {
     public Trainer(String manifestFolder, int networkID, int numInputs, int[] layerSizes, Layer.Functions function) {
         
         m_networkID = networkID;
+
+        stopped = false;
 
         m_evolution = 0;
         m_manifestFolder = manifestFolder;
@@ -67,6 +71,24 @@ public abstract class Trainer implements Runnable {
      * The method that is run automatically after the start() method is called.
      */
     public abstract void run();
+
+    /**
+     * end()
+     * 
+     * Ends the thread.
+     */
+    public void end() {
+        stopped = true;
+    }
+
+    /**
+     * isStopped()
+     * 
+     * @return
+     */
+    public boolean isStopped() {
+        return stopped;
+    }
 
     /**
      * save()
