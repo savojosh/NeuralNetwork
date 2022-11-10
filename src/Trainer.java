@@ -3,7 +3,7 @@
 //-----[CLASS]-----\\
 /**
  * Trainer
- * Generic Trainer Class
+ * Abstract Trainer Class
  * 
  * Creates and manages a neural network's evolutions.
  * 
@@ -25,7 +25,7 @@ public abstract class Trainer implements Runnable {
     
     /**
      * Trainer
-     * Generic Trainer Class
+     * Abstract Trainer Class
      * 
      * Creates and manages a neural network's evolutions.
      * 
