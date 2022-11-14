@@ -30,8 +30,8 @@ public class MnistDatabase {
      * @throws IOException
      */
     private MnistDatabase() throws IOException {
-        training = new MnistDataReader().readData("data/train-images.idx3-ubyte", "data/train-labels.idx1-ubyte");
-        testing = new MnistDataReader().readData("data/t10k-images.idx3-ubyte", "data/t10k-labels.idx1-ubyte");
+        training = new MnistDataReader().readData("data/Input/train-images.idx3-ubyte", "data/Input/train-labels.idx1-ubyte");
+        testing = new MnistDataReader().readData("data/Input/t10k-images.idx3-ubyte", "data/Input/t10k-labels.idx1-ubyte");
     }
 
     //-----[METHODS]-----\\
@@ -46,6 +46,8 @@ public class MnistDatabase {
         if(instance == null) {
             try {
                 instance = new MnistDatabase();
+
+                // System.out.println("MnistDatabase created.");
             } catch(IOException e) {
                 System.out.println(e.getMessage());
                 System.out.println(e.getStackTrace());

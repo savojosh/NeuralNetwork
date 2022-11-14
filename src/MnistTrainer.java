@@ -47,15 +47,6 @@ public class MnistTrainer extends Trainer {
     //-----[METHODS]-----\\
 
     /**
-     * start()
-     * 
-     * Starts the trainer thread. After this method is complete, the run() method will be automatically called.
-     */
-    public void start() {
-
-    }
-
-    /**
      * run()
      * 
      * The method that is run automatically after the start() method is called.
@@ -113,7 +104,7 @@ public class MnistTrainer extends Trainer {
 
             }
 
-            System.out.println(m_networkID + " scored " + score + "/" + PERFECT_SCORE);
+            System.out.println("Network " + m_networkID + "." + getEvolution() + " scored " + score + "/" + PERFECT_SCORE);
 
             // Saves the current network to local.
             save();
@@ -121,13 +112,16 @@ public class MnistTrainer extends Trainer {
             // If it scored perfectly, increase the consistency rating.
             // If it did not score perfectly, have the network evolve.
             if(PERFECT_SCORE == score) {
+                // save();
                 consistency++;
             } else {
                 m_network.update(score, PERFECT_SCORE);
+                // incrementEvolution();
             }
 
             // If the network reached the consistency goal, end the thread.
             if(consistency == CONSISTENCY_GOAL) {
+                // save();
                 end();
             }
 

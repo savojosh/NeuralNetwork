@@ -45,8 +45,12 @@ public class Layer {
     }
 
     // MIN AND MAX CHANGE FOR WEIGHTS AND BIASES
-    private static final double m_MAX = 1;
-    private static final double m_MIN = -1;
+    private static final double MAX = 1;
+    private static final double MIN = -1;
+
+    // How precise biases and weights should be.
+    // 7 zeros = 7 decimal places.
+    private static final double PRECISION = 10000000;
     
     //-----[VARIABLES]-----\\
 
@@ -66,6 +70,10 @@ public class Layer {
     private double[][] m_weights;
     // The output values of each node when the layer's nodes were last calculated.
     private double[] m_vector;
+
+    private int previousScore;
+    private double[] m_previousBiasChange;
+    private double[][] m_previousWeightsChange;
 
     //-----[CONSTRUCTORS]-----\\
 
@@ -170,9 +178,13 @@ public class Layer {
         m_biases = new double[m_layerSize];
         m_weights = new double[m_layerSize][m_inputSize];
 
+        m_previousBiasChange = new double[m_layerSize];
+        m_previousWeightsChange = new double[m_layerSize][m_inputSize];
+
         // Sets all biases to 0.
         for(int bias = 0; bias < m_layerSize; bias++) {
             m_biases[bias] = 0;
+            m_previousBiasChange[bias] = 0;
         }
 
         // Randomly generates a weight for each input of each node ranging from m_MAX to m_MIN.
@@ -180,7 +192,8 @@ public class Layer {
 
             for(int weight = 0; weight < m_inputSize; weight++) {
 
-                m_weights[node][weight] = Math.random() * (m_MAX - m_MIN) + m_MIN;
+                m_weights[node][weight] = Math.round((Math.random() * (MAX - MIN) + MIN) * PRECISION) / PRECISION;
+                m_previousWeightsChange[node][weight] = 0;
 
             }
 
@@ -211,22 +224,21 @@ public class Layer {
         // The multiplier ranges from 0 to 1. Add or subtract to the comparison in the for loop to change this range.
         double multiplier = difference / divisor;
 
-        // How precise biases and weights should be.
-        // 7 zeros = 7 decimal places.
-        double precision = 10000000;
-
         // Updates the biases.
         for(int bias = 0; bias < m_layerSize; bias++) {
 
-            double proposed = Math.round(
-                (m_biases[bias] + (Math.random() * (m_MAX - m_MIN) + m_MIN) * multiplier) * precision
-            ) / precision;
+            double change = Math.random() * (MAX - MIN) + MIN;
 
-            // Ensures that biases are contained within the min and max values.
-            // If the proposed new value is not within the min and max, no change occurs to that bias.
-            if(proposed > m_MIN && proposed < m_MAX) {
-                m_biases[bias] = proposed;
+            if((m_biases[bias] > MAX && change > 0) || (m_biases[bias] < MIN && change < 0)) {
+                // bias regularization
+                // due to the nature of the sigmoid function, if a bias becomes too large, either positive or negative, 
+                // the f will always return 0 or 1 with no in-between.
+                change = change * multiplier * 1.0 / Math.sqrt(Math.pow(m_biases[bias], 2));
+            } else {
+                change = change * multiplier;
             }
+            
+            m_biases[bias] = Math.round((m_biases[bias] + change) * PRECISION) / PRECISION;
 
         }
 
@@ -235,15 +247,18 @@ public class Layer {
 
             for(int weight = 0; weight < m_inputSize; weight++) {
 
-                double proposed = Math.round(
-                    (m_weights[node][weight] + (Math.random() * (m_MAX - m_MIN) + m_MIN) * multiplier) * precision
-                ) / precision;
-                
-                // Ensures that weights are contained within the min and max values.
-                // If the proposed new value is not within the min and max, no change occurs to that weight.
-                if(proposed > m_MIN && proposed < m_MAX) {
-                    m_weights[node][weight] = proposed;
+                double change = Math.random() * (MAX - MIN) + MIN;
+
+                if((m_weights[node][weight] > MAX && change > 0) || (m_weights[node][weight] < MIN && change < 0)) {
+                    // weight regularization
+                    // due to the nature of the sigmoid function, if a weight becomes too large, either positive or negative, 
+                    // the weight * input will always result in 0 or 1 from the sigmoid function.
+                    change = change * multiplier * 1.0 / Math.sqrt(Math.pow(m_weights[node][weight], 2));
+                } else {
+                    change = change * multiplier;
                 }
+                
+                m_weights[node][weight] = Math.round((m_weights[node][weight] + change) * PRECISION) / PRECISION;
 
             }
 
@@ -264,8 +279,23 @@ public class Layer {
      */
     public double[] calculate(double[] inputs) throws Exception {
 
-        if(m_inputSize != inputs.length) {
-            throw new Exception("The initial input size does not match the present number of inputs.");
+        assert m_inputSize == inputs.length: " the input size of the layer and the number of inputs do not match.";
+
+        // Turns all inputs into decimals.
+        double maxInput = 0;
+        for(int in = 0; in < inputs.length; in++) {
+            if(inputs[in] > maxInput) {
+                maxInput = inputs[in];
+            }
+        }
+        double divisor = 1;
+        for(int i = 0; i < Integer.toString((int)maxInput).length(); i++) {
+            divisor *= 10;
+        }
+        if(divisor > 10) {
+            for(int in = 0; in < inputs.length; in++) {
+                inputs[in] = Math.round(inputs[in] / divisor * PRECISION) / PRECISION;
+            }
         }
 
         // The output vector.

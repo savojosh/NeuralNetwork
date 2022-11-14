@@ -59,17 +59,11 @@ public abstract class Trainer implements Runnable {
     //-----[METHODS]-----\\
 
     /**
-     * start()
-     * 
-     * Starts the trainer thread. After this method is complete, the run() method will be automatically called.
-     */
-    public abstract void start();
-
-    /**
      * run()
      * 
      * The method that is run automatically after the start() method is called.
      */
+    @Override
     public abstract void run();
 
     /**
@@ -102,6 +96,19 @@ public abstract class Trainer implements Runnable {
 
         m_evolution++;
 
+    }
+
+    /**
+     * getEvolution()
+     * 
+     * @return
+     */
+    public int getEvolution() {
+        return m_evolution;
+    }
+
+    public void incrementEvolution() {
+        m_evolution++;
     }
 
     /**
