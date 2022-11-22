@@ -43,11 +43,10 @@ public class MnistDatabase {
      * @return
      */
     public static MnistDatabase getInstance() {
+
         if(instance == null) {
             try {
                 instance = new MnistDatabase();
-
-                // System.out.println("MnistDatabase created.");
             } catch(IOException e) {
                 System.out.println(e.getMessage());
                 System.out.println(e.getStackTrace());
@@ -56,6 +55,7 @@ public class MnistDatabase {
         }
 
         return instance;
+
     }
 
     /**
@@ -73,6 +73,22 @@ public class MnistDatabase {
         MnistMatrix matrix = training[imageNum];
 
         return matrix.getLabel();
+
+    }
+
+    /**
+     * getTrainingImageExpectedOutput()
+     * 
+     * @param imageNum
+     * @return
+     */
+    public double[] getTrainingImageExpectedOutputs(int imageNum) {
+
+        assert imageNum < training.length: " imageNum out of bounds.";
+
+        MnistMatrix matrix = training[imageNum];
+
+        return matrix.getExpectedOutputs();
 
     }
 
@@ -125,6 +141,22 @@ public class MnistDatabase {
         MnistMatrix matrix = testing[imageNum];
 
         return matrix.getLabel();
+
+    }
+
+    /**
+     * getTestingImageExpectedOutput()
+     * 
+     * @param imageNum
+     * @return
+     */
+    public double[] getTestingImageExpectedOutputs(int imageNum) {
+
+        assert imageNum < testing.length: " imageNum out of bounds.";
+
+        MnistMatrix matrix = testing[imageNum];
+
+        return matrix.getExpectedOutputs();
 
     }
 

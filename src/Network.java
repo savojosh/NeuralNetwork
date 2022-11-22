@@ -118,20 +118,35 @@ public class Network {
 
     //-----[METHODS]-----\\
 
+    public double cost(double[] actualOutputs, double[] expectedOutputs) {
+
+        assert actualOutputs.length == expectedOutputs.length: " output arrays do not match in length.";
+
+        double cost = 0;
+
+        for(int out = 0; out < actualOutputs.length; out++) {
+
+            cost += Math.pow(actualOutputs[out] - expectedOutputs[out], 2);
+
+        }
+
+        return cost;
+
+    }
+
     /**
-     * update()
+     * learn()
      * 
      * Updates all weights and biases synchronously in all layers of the network.
      * 
-     * @param actualScore
-     * @param desiredScore
+     * @param cost = Acts as a multiplier to changes.
      */
-    public void update(int actualScore, int desiredScore) {
+    public void learn(double cost) {
 
         // Loops through all of the layers and updates them.
         for(int layer = 0; layer < m_networkSize; layer++) {
 
-            m_layers[layer].update(actualScore, desiredScore);
+            m_layers[layer].learn(cost);
 
         }
 

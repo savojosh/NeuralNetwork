@@ -203,26 +203,14 @@ public class Layer {
     //-----[METHODS]-----\\
 
     /**
-     * update()
+     * learn()
      * 
      * Changes all of the weights and biases synchronously with 
      * the actual and desired scores acting as a multiplier to the changes.
      * 
-     * @param actualScore
-     * @param desiredScore
+     * @param cost = Acts as a multiplier to changes.
      */
-    public void update(int actualScore, int desiredScore) {
-
-        // Difference between the desired score and the score the network received.
-        int difference = desiredScore - actualScore;
-        // Creates a divisor that will divide the difference by how many ever digits the difference has to make it into a decimal.
-        double divisor = 1;
-        for(int i = 0; i < Integer.toString(difference).length(); i++) {
-            divisor *= 10;
-        }
-        // Actually performs the division.
-        // The multiplier ranges from 0 to 1. Add or subtract to the comparison in the for loop to change this range.
-        double multiplier = difference / divisor;
+    public void learn(double cost) {
 
         // Updates the biases.
         for(int bias = 0; bias < m_layerSize; bias++) {
@@ -233,9 +221,9 @@ public class Layer {
                 // bias regularization
                 // due to the nature of the sigmoid function, if a bias becomes too large, either positive or negative, 
                 // the f will always return 0 or 1 with no in-between.
-                change = change * multiplier * 1.0 / Math.sqrt(Math.pow(m_biases[bias], 2));
+                change = change * cost * 1.0 / Math.sqrt(Math.pow(m_biases[bias], 2));
             } else {
-                change = change * multiplier;
+                change = change * cost;
             }
             
             m_biases[bias] = Math.round((m_biases[bias] + change) * PRECISION) / PRECISION;
@@ -253,9 +241,9 @@ public class Layer {
                     // weight regularization
                     // due to the nature of the sigmoid function, if a weight becomes too large, either positive or negative, 
                     // the weight * input will always result in 0 or 1 from the sigmoid function.
-                    change = change * multiplier * 1.0 / Math.sqrt(Math.pow(m_weights[node][weight], 2));
+                    change = change * cost * 1.0 / Math.sqrt(Math.pow(m_weights[node][weight], 2));
                 } else {
-                    change = change * multiplier;
+                    change = change * cost;
                 }
                 
                 m_weights[node][weight] = Math.round((m_weights[node][weight] + change) * PRECISION) / PRECISION;

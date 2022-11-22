@@ -1,14 +1,15 @@
 /**
- * @author turkdogan
+ * @author turkdogan, Joshua Savoie
  */
 public class MnistMatrix {
 
-    private int [][] data;
+    private int[][] data;
 
     private int nRows;
     private int nCols;
 
     private int label;
+    private double[] expectedOutputs;
 
     public MnistMatrix(int nRows, int nCols) {
         this.nRows = nRows;
@@ -31,6 +32,16 @@ public class MnistMatrix {
 
     public void setLabel(int label) {
         this.label = label;
+
+        expectedOutputs = new double[10];
+        for(int i = 0; i < 10; i++) {
+            expectedOutputs[i] = 0;
+        }
+        expectedOutputs[label] = 1;
+    }
+
+    public double[] getExpectedOutputs() {
+        return expectedOutputs;
     }
 
     public int getNumberOfRows() {

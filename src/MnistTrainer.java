@@ -59,6 +59,9 @@ public class MnistTrainer extends Trainer {
         // The number of times the network scored perfectly.
         int consistency = 0;
 
+        // The costs for each image.
+        double[] costs = new double[database.getTrainingDatasetSize()];
+
         // While the thread isn't stopped.
         while(!isStopped()) {
 
@@ -69,6 +72,7 @@ public class MnistTrainer extends Trainer {
             for(int i = 0; i < database.getTrainingDatasetSize(); i++) {
 
                 int label = database.getTrainingImageLabel(i);
+                double[] expectedOutputs = database.getTrainingImageExpectedOutputs(i);
                 int[][] matrix = database.getTrainingImageMatrix(i);
                 double[] inputs = new double[matrix.length * matrix[0].length];
 
@@ -98,6 +102,8 @@ public class MnistTrainer extends Trainer {
                         score++;
                     }
 
+                    costs[i] = m_network.cost(outputs, expectedOutputs);
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -112,16 +118,21 @@ public class MnistTrainer extends Trainer {
             // If it scored perfectly, increase the consistency rating.
             // If it did not score perfectly, have the network evolve.
             if(PERFECT_SCORE == score) {
-                // save();
                 consistency++;
             } else {
-                m_network.update(score, PERFECT_SCORE);
+                double avgCost = 0;
+                for(double c : costs) {
+                    // System.out.println(c);
+                    avgCost += c;
+                }
+                avgCost = avgCost / costs.length;
+                System.out.println("Average Cost: " + avgCost);
+                m_network.learn(avgCost);
                 // incrementEvolution();
             }
 
             // If the network reached the consistency goal, end the thread.
             if(consistency == CONSISTENCY_GOAL) {
-                // save();
                 end();
             }
 
