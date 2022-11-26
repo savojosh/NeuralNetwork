@@ -3,6 +3,7 @@
 import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 
 //-----[CLASS]-----\\
@@ -60,7 +61,7 @@ public class Layer {
     // Size of the layer.
     private int m_layerSize;
     // How many inputs the layer takes in.
-    private int m_inputSize;
+    private int m_numInputs;
     // The function the layer uses to calculate the node vector.
     private Functions m_function;
 
@@ -71,11 +72,15 @@ public class Layer {
     // The output values of each node when the layer's nodes were last calculated.
     private double[] m_vector;
 
-    private int previousScore;
-    private double[] m_previousBiasChange;
-    private double[][] m_previousWeightsChange;
-
     //-----[CONSTRUCTORS]-----\\
+
+    /**
+     * Layer
+     * Copy Constructor
+     * 
+     * Used by copy()
+     */
+    private Layer() {}
 
     /**
      * Layer
@@ -105,7 +110,7 @@ public class Layer {
             // 1 is subtracted due to the first line of the file being taken by the layer's activation function.
             m_layerSize = lines.size() - 1;
             // Gets the input size based on how many weights are present for the first node.
-            m_inputSize = lines.get(1).split(":")[1].split(",").length;
+            m_numInputs = lines.get(1).split(":")[1].split(",").length;
             
             // Searches for the function saved in the first line of the save file.
             m_function = null;
@@ -121,7 +126,7 @@ public class Layer {
             // Initializes the arrays to store layer-significant values.
             m_vector = new double[m_layerSize];
             m_biases = new double[m_layerSize];
-            m_weights = new double[m_layerSize][m_inputSize];
+            m_weights = new double[m_layerSize][m_numInputs];
 
             // Loops through the lines and gets the vector, bias, and weight values for each node.
             for(int node = 0; node < m_layerSize; node++) {
@@ -138,7 +143,7 @@ public class Layer {
                 m_vector[node] = Double.parseDouble(stringV);
                 m_biases[node] = Double.parseDouble(stringB);
 
-                for(int weight = 0; weight < m_inputSize; weight++) {
+                for(int weight = 0; weight < m_numInputs; weight++) {
 
                     m_weights[node][weight] = Double.parseDouble(stringWs[weight]);
 
@@ -164,36 +169,31 @@ public class Layer {
      * 
      * @param manifestFile
      * @param layerSize
-     * @param inputSize
+     * @param numInputs
      * @param function
      */
-    public Layer(String manifestFile, int layerSize, int inputSize, Functions function) {
+    public Layer(String manifestFile, int layerSize, int numInputs, Functions function) {
 
         m_manifestFile = manifestFile;
 
         m_layerSize = layerSize;
-        m_inputSize = inputSize;
+        m_numInputs = numInputs;
         m_function = function;
 
         m_biases = new double[m_layerSize];
-        m_weights = new double[m_layerSize][m_inputSize];
-
-        m_previousBiasChange = new double[m_layerSize];
-        m_previousWeightsChange = new double[m_layerSize][m_inputSize];
+        m_weights = new double[m_layerSize][m_numInputs];
 
         // Sets all biases to 0.
         for(int bias = 0; bias < m_layerSize; bias++) {
             m_biases[bias] = 0;
-            m_previousBiasChange[bias] = 0;
         }
 
         // Randomly generates a weight for each input of each node ranging from m_MAX to m_MIN.
         for(int node = 0; node < m_layerSize; node++) {
 
-            for(int weight = 0; weight < m_inputSize; weight++) {
+            for(int weight = 0; weight < m_numInputs; weight++) {
 
                 m_weights[node][weight] = Math.round((Math.random() * (MAX - MIN) + MIN) * PRECISION) / PRECISION;
-                m_previousWeightsChange[node][weight] = 0;
 
             }
 
@@ -233,7 +233,7 @@ public class Layer {
         // Updates the weights.
         for(int node = 0; node < m_layerSize; node++) {
 
-            for(int weight = 0; weight < m_inputSize; weight++) {
+            for(int weight = 0; weight < m_numInputs; weight++) {
 
                 double change = Math.random() * (MAX - MIN) + MIN;
 
@@ -267,7 +267,7 @@ public class Layer {
      */
     public double[] calculate(double[] inputs) throws Exception {
 
-        assert m_inputSize == inputs.length: " the input size of the layer and the number of inputs do not match.";
+        assert m_numInputs == inputs.length: " the input size of the layer and the number of inputs do not match.";
 
         // Turns all inputs into decimals.
         double maxInput = 0;
@@ -295,7 +295,7 @@ public class Layer {
             double output = m_biases[node];
 
             // output = summation(w * i) + bias
-            for(int input = 0; input < m_inputSize; input++) {
+            for(int input = 0; input < m_numInputs; input++) {
 
                 output += m_weights[node][input] * inputs[input];
 
@@ -393,10 +393,10 @@ public class Layer {
 
             entries[node + 1] = String.format("%.7f", m_vector[node]) + "," + String.format("%.7f", m_biases[node]) + ":";
 
-            for(int weight = 0; weight < m_inputSize; weight++) {
+            for(int weight = 0; weight < m_numInputs; weight++) {
 
                 // If the last weight in the layer:
-                if(weight == m_inputSize - 1) {
+                if(weight == m_numInputs - 1) {
                     entries[node + 1] += String.format("%.7f", m_weights[node][weight]);
 
                 // Else (not the last):
@@ -427,7 +427,7 @@ public class Layer {
      * @return
      */
     public int getInputSize() {
-        return m_inputSize;
+        return m_numInputs;
     }
 
     /**
@@ -446,6 +446,104 @@ public class Layer {
      */
     public Functions getFunction() {
         return m_function;
+    }
+
+    //-----[COPY]-----\\
+
+    /**
+     * copy()
+     * 
+     * Returns a new instance of class Layer with all the same member variable values.
+     * 
+     * @return
+     */
+    public Layer copy() {
+
+        Layer c = new Layer();
+
+        c.copyManifest(m_manifestFile);
+        c.copyLayerSize(m_layerSize);
+        c.copyNumInputs(m_numInputs);
+        c.copyFunction(m_function);
+        c.copyBiases(m_biases);
+        c.copyWeights(m_weights);
+        c.copyVector(m_vector);
+
+        return c;
+    }
+
+    /**
+     * copyManifest()
+     * 
+     * @param toCopy
+     */
+    private void copyManifest(String toCopy) {
+        m_manifestFile = new String(toCopy);
+    }
+
+    /**
+     * copyLayerSize()
+     * 
+     * @param toCopy
+     */
+    private void copyLayerSize(int toCopy) {
+        m_layerSize = toCopy;
+    }
+
+    /**
+     * copyNumInputs()
+     * 
+     * @param toCopy
+     */
+    private void copyNumInputs(int toCopy) {
+        m_numInputs = toCopy;
+    }
+
+    /**
+     * copyFunction()
+     * 
+     * @param toCopy
+     */
+    private void copyFunction(Functions toCopy) {
+        m_function = toCopy;
+    }
+
+    /**
+     * copyBiases()
+     * 
+     * @param toCopy
+     */
+    private void copyBiases(double[] toCopy) {
+        m_biases = new double[toCopy.length];
+        for(int i = 0; i < toCopy.length; i++) {
+            m_biases[i] = toCopy[i];
+        }
+    }
+
+    /**
+     * copyWeights()
+     * 
+     * @param toCopy
+     */
+    private void copyWeights(double[][] toCopy) {
+        m_weights = new double[toCopy.length][toCopy[0].length];
+        for(int x = 0; x < toCopy.length; x++) {
+            for(int y = 0; y < toCopy[0].length; y++) {
+                m_weights[x][y] = toCopy[x][y];
+            }
+        }
+    }
+
+    /**
+     * copyVector()
+     * 
+     * @param toCopy
+     */
+    private void copyVector(double[] toCopy) {
+        m_vector = new double[toCopy.length];
+        for(int i = 0; i < toCopy.length; i++) {
+            m_vector[i] = toCopy[i];
+        }
     }
 
 }

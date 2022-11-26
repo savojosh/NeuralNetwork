@@ -12,7 +12,7 @@ public class Main {
     public static void main(String[] args) {
 
         int[] layerSizes = {
-            80, 60, 60, 40, 20, 10
+            20, 20, 10
         };
 
         Thread t1 = new Thread(new MnistTrainer(

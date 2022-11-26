@@ -33,6 +33,14 @@ public class Network {
 
     /**
      * Network
+     * Copy Constructor
+     * 
+     * Used by copy()
+     */
+    private Network() {}
+
+    /**
+     * Network
      * Retrieve Network Constructor
      * 
      * This constructor is used to retrieve an existing network from a manifest folder.
@@ -241,6 +249,67 @@ public class Network {
 
         }
 
+    }
+
+    //-----[COPY]-----\\
+
+    /**
+     * copy()
+     * 
+     * Returns a new instance of class Network with all the same member variable values.
+     * 
+     * @return
+     */
+    public Network copy() {
+
+        Network c = new Network();
+
+        c.copyManifest(m_manifestFolder);
+        c.copyNetworkSize(m_networkSize);
+        c.copyNumInputs(m_numInputs);
+        c.copyLayers(m_layers);
+
+        return c;
+
+    }
+
+    /**
+     * copyManifest()
+     * 
+     * @param toCopy
+     */
+    private void copyManifest(String toCopy) {
+        m_manifestFolder = new String(toCopy);
+    }
+
+    /**
+     * copyNetworkSize()
+     * 
+     * @param toCopy
+     */
+    private void copyNetworkSize(int toCopy) {
+        m_networkSize = toCopy;
+    }
+
+    /**
+     * copyNumInputs()
+     * 
+     * @param toCopy
+     */
+    private void copyNumInputs(int toCopy) {
+        m_numInputs = toCopy;
+    }
+
+    /**
+     * copyLayers()
+     * 
+     * @param toCopy
+     */
+    private void copyLayers(Layer[] toCopy) {
+        m_layers = new Layer[toCopy.length];
+        for(int i = 0; i < toCopy.length; i++) {
+            m_layers[i] = toCopy[i].copy();
+        }
     }
 
 }
