@@ -3,7 +3,6 @@
 import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Scanner;
 
 //-----[CLASS]-----\\
@@ -263,9 +262,8 @@ public class Layer {
      * 
      * @param inputs
      * @return
-     * @throws Exception
      */
-    public double[] calculate(double[] inputs) throws Exception {
+    public double[] calculate(double[] inputs) {
 
         assert m_numInputs == inputs.length: " the input size of the layer and the number of inputs do not match.";
 

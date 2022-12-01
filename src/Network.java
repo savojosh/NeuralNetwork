@@ -171,11 +171,9 @@ public class Network {
      * @return
      * @throws Exception
      */
-    public double[] calculate(double[] inputs) throws Exception {
+    public double[] calculate(double[] inputs) {
 
-        if(m_numInputs != inputs.length) {
-            throw new Exception("The initial input size does not match the present number of inputs.");
-        }
+        assert m_numInputs == inputs.length: " The set number of inputs does not match the actual number of inputs.";
 
         // The last layer is the output layer.
         double[] outputs = new double[m_layers[m_layers.length - 1].getLayerSize()];

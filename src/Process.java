@@ -5,11 +5,11 @@
  * Process
  * Abstract Class
  * 
- * d e s c r i p t i o n
+ * Extend this class to solve a problem.
  * 
  * @author Joshua Savoie
  */
-public abstract class Process implements Runnable {
+public abstract class Process {
 
     //-----[CONSTANTS]-----\\
 
@@ -17,26 +17,40 @@ public abstract class Process implements Runnable {
 
     private final Network m_network;
 
-    private volatile boolean m_stopped;
-
     //-----[CONSTRUCTOR]-----\\
-
+    /**
+     * Process()
+     * 
+     * All constructors of sub-classes should have only the
+     * Network parameter.
+     * 
+     * @param network
+     */
     public Process(Network network) {
+
         m_network = network;
 
-        m_stopped = false;
     }
 
     //-----[METHODS]-----\\
 
     /**
-     * run()
+     * output()
      * 
-     * The method that is run automatically after the start() method is called.
+     * Implement this method to complete a given task.
+     * 
+     * The return should be the cost of the network.
+     * 
+     * @return
      */
-    @Override
-    public abstract void run();
+    public abstract double output();
 
-    
+    // TODO: Transition this into a constructor parameter.
+    /**
+     * setID()
+     * 
+     * @param id
+     */
+    public abstract void setID(int id);
     
 }

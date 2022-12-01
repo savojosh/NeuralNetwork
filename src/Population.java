@@ -1,6 +1,7 @@
 //-----[IMPORTS]-----\\
 
 import java.util.Arrays;
+import java.io.File;
 import java.util.ArrayList;
 
 //-----[CLASS]-----\\
@@ -9,6 +10,8 @@ import java.util.ArrayList;
  * Class
  * 
  * A population of neural networks.
+ * 
+ * @author Joshua Savoie
  */
 public class Population {
     
@@ -18,19 +21,59 @@ public class Population {
 
     private final String m_manifestFolder;
     
-    private int m_generation = 0;
+    private int m_generation;
     private Network[] m_networks;
 
     //-----[CONSTRUCTORS]-----\\
+    /**
+     * Population
+     * Retrieve Population Constructor
+     * 
+     * Pass in the parent folder of the generation-to-pull.
+     * Then pass in the generation-to-pulls's number.
+     * 
+     * @param manifestFolder
+     * @param generationToPull
+     */
+    public Population(String manifestFolder, int generationToPull) {
 
+        m_manifestFolder = manifestFolder;
+        m_generation = generationToPull;
+
+        // Gets the list of folders from the generation.
+        File generationFolder = new File(getGenerationFolder());
+        File[] networkFolders = generationFolder.listFiles();
+
+        // Pulls the neural network population.
+        m_networks = new Network[networkFolders.length];
+        for(int network = 0; network < m_networks.length; network++) {
+            m_networks[network] = new Network(networkFolders[network].getAbsolutePath());
+        }
+
+    }
+
+    /**
+     * Population
+     * New Population Constructor
+     * 
+     * Creates a new neural network population of the given population size.
+     * 
+     * @param manifestFolder
+     * @param populationSize
+     * @param layerSizes
+     * @param numInputs
+     * @param function
+     */
     public Population(String manifestFolder, int populationSize, int[] layerSizes, int numInputs, Layer.Functions function) {
 
         m_manifestFolder = manifestFolder;
+        m_generation = 0;
 
+        // Creates the neural network population.
         m_networks = new Network[populationSize];
         for(int network = 0; network < m_networks.length; network++) {
             m_networks[network] = new Network(
-                m_manifestFolder + "\\Layer_" + String.format("%03d", network + 1), 
+                getNetworkFolder(network), 
                 numInputs, 
                 layerSizes, 
                 function
@@ -53,6 +96,9 @@ public class Population {
         
         assert graduationSize < m_networks.length: " The graduation size exceeds the size of the neural network population.";
         assert costs.length == m_networks.length: " The number of costs does not match the number of neural networks.";
+
+        // Increments the generation.
+        m_generation++;
 
         // Neural network templates.
         Network[] graduationClass = new Network[graduationSize];
@@ -96,7 +142,8 @@ public class Population {
         }
 
         // Uses the graduated neural networks as templates to create the new neural network population pool.
-        newNetworks[0] = graduationClass[0];
+        newNetworks[0] = graduationClass[0].copy();
+        newNetworks[0].setManifestFolder(getNetworkFolder(0));
         for(int p = 1; p < newNetworks.length; p += graduationSize) {
 
             for(int g = 0; g < graduationClass.length; g++) {
@@ -116,9 +163,6 @@ public class Population {
 
         // Sets the population pool to the new pool.
         m_networks = newNetworks;
-
-        // Increments the generation.
-        m_generation++;
 
     }
 
@@ -158,6 +202,17 @@ public class Population {
     }
 
     /**
+     * getSize()
+     * 
+     * Returns the size of the population.
+     * 
+     * @return
+     */
+    public int getSize() {
+        return m_networks.length;
+    }
+
+    /**
      * getNetworks()
      * 
      * NOTE: 
@@ -170,23 +225,13 @@ public class Population {
         return m_networks;
     }
 
-    // public <A, B> ArrayList<Object[]> unionToPairs(A[] a, B[] b) {
-
-    //     assert a.length == b.length: " The length of 'a' does not match the length of 'b'.";
-
-    //     ArrayList<Object[]> l = new ArrayList<Object[]>(a.length);
-
-    //     for(int i = 0; i < l.size(); i++) {
-            
-    //         Object[] o = new Object[2];
-    //         o[0] = a[i];
-    //         o[1] = b[i];
-    //         l.add(o);
-
-    //     }
-
-    //     return l;
-
-    // }
-
+    /**
+     * getGeneration()
+     * 
+     * @return
+     */
+    public int getGeneration() {
+        return m_generation;
+    }
+    
 }

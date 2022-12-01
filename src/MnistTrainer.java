@@ -6,6 +6,8 @@
  * Class
  * 
  * An extension of the Trainer class to run the networks on the MNIST database.
+ * 
+ * @author Joshua Savoie
  */
 public class MnistTrainer extends Trainer {
 
@@ -85,28 +87,23 @@ public class MnistTrainer extends Trainer {
                     }
                 }
 
-                try {
-                    // Calculates the networkss outputs.
-                    double[] outputs = m_network.calculate(inputs);
+                // Calculates the networkss outputs.
+                double[] outputs = m_network.calculate(inputs);
 
-                    // Determines the network's decision by finding which output had the greatest value.
-                    int decision = 0;
-                    for(int out = 0; out < outputs.length; out++) {
-                        if(outputs[out] > outputs[decision]) {
-                            decision = out;
-                        }
+                // Determines the network's decision by finding which output had the greatest value.
+                int decision = 0;
+                for(int out = 0; out < outputs.length; out++) {
+                    if(outputs[out] > outputs[decision]) {
+                        decision = out;
                     }
-
-                    // If the decision correctly matched the label, up its score.
-                    if(decision == label) {
-                        score++;
-                    }
-
-                    costs[i] = m_network.cost(outputs, expectedOutputs);
-
-                } catch (Exception e) {
-                    e.printStackTrace();
                 }
+
+                // If the decision correctly matched the label, up its score.
+                if(decision == label) {
+                    score++;
+                }
+
+                costs[i] = m_network.cost(outputs, expectedOutputs);
 
             }
 
