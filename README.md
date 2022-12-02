@@ -10,6 +10,7 @@ P.S. Some notable videos that I watched to introduce me to and better understand
 - Helped with understanding the key concepts behind neural networks. https://www.youtube.com/watch?v=piF6D6CQxUw
 - The math. https://www.youtube.com/watch?v=w8yWXqWQYmU
 - Explains neural networks in really basic terms. https://www.youtube.com/watch?v=CqOfi41LfDw
+- An amazing introduction into otherwise daunting concepts. https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi
 
 ---
 
