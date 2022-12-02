@@ -8,6 +8,8 @@ import java.io.IOException;
  * Singleton Class
  * 
  * Stores and provides access to the MNIST images and labels.
+ * 
+ * @author Joshua Savoie
  */
 public class MnistDatabase {
 

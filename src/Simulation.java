@@ -100,14 +100,6 @@ public class Simulation {
                     }
                 }
 
-                // Has the simulation wait for a period of time.
-                // Improves the loose pseudo-synchronization.
-                try {
-                    TimeUnit.MILLISECONDS.sleep(250);
-                } catch(Exception e) {
-                    e.printStackTrace();
-                    System.exit(0);
-                }
 
             }
 

@@ -60,11 +60,12 @@ public class MnistProcess extends Process {
     public double output() {
 
         MnistDatabase database = MnistDatabase.getInstance();
-        double[] costs = new double[database.getTrainingDatasetSize()];
+        final int trainingSize = database.getTrainingDatasetSize();
+        double[] costs = new double[trainingSize];
 
         // For each image in the training dataset...
         int score = 0;
-        for(int i = 0; i < database.getTrainingDatasetSize(); i++) {
+        for(int i = 0; i < trainingSize; i++) {
 
             // Label is the digit in the 784 pixel picture.
             int label = database.getTrainingImageLabel(i);
@@ -117,7 +118,7 @@ public class MnistProcess extends Process {
         }
         avgCost = avgCost / costs.length;
 
-        System.out.println("Network " + m_id + " scored " + score + "/" + database.getTrainingDatasetSize() + " with a cost of " + avgCost);
+        System.out.println("Network " + m_id + " scored " + score + "/" + trainingSize + " with a cost of " + avgCost);
 
         return avgCost;
 
