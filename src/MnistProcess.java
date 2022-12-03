@@ -75,7 +75,7 @@ public class MnistProcess extends Process {
             double[] expectedOutputs = database.getTrainingImageExpectedOutputs(i);
             
             // Inputs into the neural network.
-            int[][] matrix = database.getTrainingImageMatrix(i);
+            double[][] matrix = database.getTrainingImageMatrix(i);
             double[] inputs = new double[matrix.length * matrix[0].length];
 
             // Formats the matrix from 2D to 1D.

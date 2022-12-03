@@ -1,7 +1,7 @@
 import java.io.*;
 
 /**
- * @author turkdogan
+ * @author turkdogan, Joshua Savoie
  */
 public class MnistDataReader  {
 
@@ -34,7 +34,8 @@ public class MnistDataReader  {
             mnistMatrix.setLabel(labelInputStream.readUnsignedByte());
             for (int r = 0; r < nRows; r++) {
                 for (int c = 0; c < nCols; c++) {
-                    mnistMatrix.setValue(r, c, dataInputStream.readUnsignedByte());
+                    double v = (double)dataInputStream.readUnsignedByte() / 255.0;
+                    mnistMatrix.setValue(r, c, v);
                 }
             }
             data[i] = mnistMatrix;

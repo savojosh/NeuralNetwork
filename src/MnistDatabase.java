@@ -102,12 +102,12 @@ public class MnistDatabase {
      * @param imageNum
      * @return
      */
-    public int[][] getTrainingImageMatrix(int imageNum) {
+    public double[][] getTrainingImageMatrix(int imageNum) {
 
         assert imageNum < training.length: " imageNum out of bounds.";
 
         MnistMatrix matrix = training[imageNum];
-        int[][] pixels = new int[matrix.getNumberOfRows()][matrix.getNumberOfColumns()];
+        double[][] pixels = new double[matrix.getNumberOfRows()][matrix.getNumberOfColumns()];
 
         for (int r = 0; r < matrix.getNumberOfRows(); r++ ) {
             for (int c = 0; c < matrix.getNumberOfColumns(); c++) {
@@ -170,12 +170,12 @@ public class MnistDatabase {
      * @param imageNum
      * @return
      */
-    public int[][] getTestingImageMatrix(int imageNum) {
+    public double[][] getTestingImageMatrix(int imageNum) {
 
         assert imageNum < testing.length: " imageNum out of bounds.";
 
         MnistMatrix matrix = testing[imageNum];
-        int[][] pixels = new int[matrix.getNumberOfRows()][matrix.getNumberOfColumns()];
+        double[][] pixels = new double[matrix.getNumberOfRows()][matrix.getNumberOfColumns()];
 
         for (int r = 0; r < matrix.getNumberOfRows(); r++ ) {
             for (int c = 0; c < matrix.getNumberOfColumns(); c++) {

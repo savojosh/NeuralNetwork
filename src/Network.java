@@ -126,6 +126,15 @@ public class Network {
 
     //-----[METHODS]-----\\
 
+    /**
+     * cost()
+     * 
+     * Calculates the cost of a neural network's outputs compared to the expected outputs.
+     * 
+     * @param actualOutputs
+     * @param expectedOutputs
+     * @return
+     */
     public double cost(double[] actualOutputs, double[] expectedOutputs) {
 
         assert actualOutputs.length == expectedOutputs.length: " output arrays do not match in length.";

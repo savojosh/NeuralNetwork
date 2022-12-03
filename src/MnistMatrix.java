@@ -3,7 +3,7 @@
  */
 public class MnistMatrix {
 
-    private int[][] data;
+    private double[][] data;
 
     private int nRows;
     private int nCols;
@@ -15,14 +15,14 @@ public class MnistMatrix {
         this.nRows = nRows;
         this.nCols = nCols;
 
-        data = new int[nRows][nCols];
+        data = new double[nRows][nCols];
     }
 
-    public int getValue(int r, int c) {
+    public double getValue(int r, int c) {
         return data[r][c];
     }
 
-    public void setValue(int row, int col, int value) {
+    public void setValue(int row, int col, double value) {
         data[row][col] = value;
     }
 

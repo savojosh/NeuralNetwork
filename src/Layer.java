@@ -3,6 +3,7 @@
 import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 
 //-----[CLASS]-----\\
@@ -266,23 +267,6 @@ public class Layer {
     public double[] calculate(double[] inputs) {
 
         assert m_numInputs == inputs.length: " the input size of the layer and the number of inputs do not match.";
-
-        // Turns all inputs into decimals.
-        double maxInput = 0;
-        for(int in = 0; in < inputs.length; in++) {
-            if(inputs[in] > maxInput) {
-                maxInput = inputs[in];
-            }
-        }
-        double divisor = 1;
-        for(int i = 0; i < Integer.toString((int)maxInput).length(); i++) {
-            divisor *= 10;
-        }
-        if(divisor > 10) {
-            for(int in = 0; in < inputs.length; in++) {
-                inputs[in] = Math.round(inputs[in] / divisor * PRECISION) / PRECISION;
-            }
-        }
 
         // The output vector.
         double[] outputs = new double[m_layerSize];
