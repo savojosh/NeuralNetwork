@@ -172,6 +172,7 @@ public class Population {
      * @return
      */
     public String getGenerationFolder() {
+        // If you wish to disable the saving of neural networks to multiple generation folders, replace "m_generation" with "1".
         return m_manifestFolder + "\\Generation_" + String.format("%03d", m_generation);
     }
 
