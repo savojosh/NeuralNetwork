@@ -12,11 +12,17 @@ The training of neural networks is centered in Simulation.java. This Simulation 
 
 1. Run the program like normal. "CTRL + F5" or simply "F5."
 2. Once the program is running, a prompt will begin.
+
     i. Answer each question exactly as how it prompts you to.
+
     ii. Note for population size: Every network receives its own thread. If you have 10 networks, you get 10 threads. Be careful not to memory overload.
+
 3. Sit back and let it run.
+
     i. This can be stopped at any time.
+
     ii. Do note, while it is running, it will be saving files to whatever path you specified. It will, potentially, take up GBs worth of storage if you let it run for an extended period of time.
+    
         a. This can be manipulated by changing the return String of Population.java's getGenerationFolder() method.
 
 ---
