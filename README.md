@@ -21,8 +21,7 @@ The training of neural networks is centered in Simulation.java. This Simulation 
 
     i. This can be stopped at any time.
 
-    ii. Do note, while it is running, it will be saving files to whatever path you specified. It will, potentially, take up GBs worth of storage if you let it run for an extended period of time.
-        a. This can be manipulated by changing the return String of Population.java's getGenerationFolder() method.
+    ii. Do note, while it is running, it will be saving files to whatever path you specified. It will, potentially, take up GBs worth of storage if you let it run for an extended period of time. This can be stopped by changing the return String of Population.java's getGenerationFolder() method. Instructions for performing this change are located in Population.java's getGenerationFolder() method.
 
 ---
 
