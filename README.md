@@ -15,8 +15,6 @@ The training of neural networks is centered in Simulation.java. This Simulation 
 
     i. Answer each question exactly as how it prompts you to.
 
-    ii. Note for population size: Every network receives its own thread. If you have 10 networks, you get 10 threads. Be careful not to memory overload.
-
 3. Sit back and let it run.
 
     i. This can be stopped at any time.

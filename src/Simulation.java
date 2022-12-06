@@ -1,6 +1,6 @@
 //-----[IMPORTS]-----\\
 
-import java.util.concurrent.TimeUnit;
+
 
 //-----[CLASS]-----\\
 /**
@@ -14,6 +14,8 @@ import java.util.concurrent.TimeUnit;
 public class Simulation {
     
     //-----[CONSTANTS]-----\\
+
+    private static final int MAX_THREADS = 10;
 
     //-----[VARIABLES]-----\\
 
@@ -74,12 +76,35 @@ public class Simulation {
             int threadsActive = 0;
 
             // Creates the threads and starts them.
-            for(int t = 0; t < threads.length; t++) {
-                threads[t] = new SimulationThread(networks[t], m_task);
-                threads[t].setID(t);
-                threads[t].start();
+            for(int n = 0; n < threads.length; n++) {
+                threads[n] = new SimulationThread(networks[n], m_task);
+                threads[n].setID(n);
+                threads[n].start();
 
                 threadsActive++;
+
+                while(threadsActive >= MAX_THREADS) {
+
+                    for(int t = 0; t < n; t++) {
+
+                        // If they are no longer active...
+                        // store the neural network's cost;
+                        // set completed[thread] to true;
+                        // and decrement threadsActive.
+                        if(!threads[t].isAlive() && !completed[t]) {
+
+                            costs[t] = threads[t].getCost();
+                            // System.out.println("Network " + t + " has finished with a cost of " + costs[t]);
+
+                            completed[t] = true;
+                            threadsActive--;
+
+                        }
+
+                    }
+
+                }
+
             }
 
             // While the number of threads active is > 0.
@@ -87,19 +112,22 @@ public class Simulation {
 
                 // Check through all of the threads to see if they are active.
                 for(int t = 0; t < threads.length; t++) {
+
                     // If they are no longer active...
                     // store the neural network's cost;
                     // set completed[thread] to true;
                     // and decrement threadsActive.
                     if(!threads[t].isAlive() && !completed[t]) {
+
                         costs[t] = threads[t].getCost();
                         // System.out.println("Network " + t + " has finished with a cost of " + costs[t]);
 
                         completed[t] = true;
                         threadsActive--;
-                    }
-                }
 
+                    }
+
+                }
 
             }
 
