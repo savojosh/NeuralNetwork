@@ -99,6 +99,7 @@ public class Population {
 
         // Increments the generation.
         m_generation++;
+        System.out.println(m_generation);
 
         // Neural network templates.
         Network[] graduationClass = new Network[graduationSize];
@@ -135,6 +136,10 @@ public class Population {
             graduationClass[g] = populationAsList.get(i);
             graduationCosts[g] = costsAsList.get(i);
 
+            // Completely copies the graduated neural networks into the new population creating a sort of leaderboard.
+            newNetworks[g] = graduationClass[g].copy();
+            newNetworks[g].setManifestFolder(getNetworkFolder(g));
+
             // Pops the graduated neural network and its respective cost from the ArrayLists.
             populationAsList.remove(i);
             costsAsList.remove(i);
@@ -142,9 +147,7 @@ public class Population {
         }
 
         // Uses the graduated neural networks as templates to create the new neural network population pool.
-        newNetworks[0] = graduationClass[0].copy();
-        newNetworks[0].setManifestFolder(getNetworkFolder(0));
-        for(int p = 1; p < newNetworks.length; p += graduationSize) {
+        for(int p = graduationSize; p < newNetworks.length; p += graduationSize) {
 
             for(int g = 0; g < graduationClass.length; g++) {
             

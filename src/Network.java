@@ -29,6 +29,9 @@ public class Network {
     // Each of the hidden layers and the output layer.
     private Layer[] m_layers;
 
+    // Activation function.
+    private Layer.Functions m_function;
+
     //-----[CONSTRUCTORS]-----\\
 
     /**
@@ -71,6 +74,8 @@ public class Network {
         // Gets the number of inputs taken in by the network.
         m_numInputs = m_layers[0].getInputSize();
 
+        m_function = m_layers[0].getFunction();
+
     }
 
     /**
@@ -96,6 +101,8 @@ public class Network {
 
         m_layers = new Layer[m_networkSize];
 
+        m_function = function;
+
         // Creating all of the layers
         for(int layer = 0; layer < m_networkSize; layer++) {
 
@@ -106,7 +113,7 @@ public class Network {
                     m_manifestFolder + "\\Layer_" + String.format("%03d", layer + 1),
                     layerSizes[layer],
                     m_numInputs,
-                    function
+                    m_function
                 );
 
             // Else (not the first) pull the number of inputs for the layer from the previous layer.
@@ -116,7 +123,7 @@ public class Network {
                     m_manifestFolder + "\\Layer_" + String.format("%03d", layer + 1),
                     layerSizes[layer],
                     layerSizes[layer - 1],
-                    function
+                    m_function
                 );
                 
             }
@@ -143,11 +150,39 @@ public class Network {
 
         for(int out = 0; out < actualOutputs.length; out++) {
 
-            cost += Math.pow(actualOutputs[out] - expectedOutputs[out], 2);
+            cost += Math.pow(expectedOutputs[out] - actualOutputs[out], 2);
 
         }
 
         return cost;
+
+    }
+
+    public double[] error(double[] actualOutputs, double[] expectedOutputs) {
+
+        assert actualOutputs.length == expectedOutputs.length: " output arrays do not match in length.";
+
+        double[] errorVector = new double[actualOutputs.length];
+
+        for(int i = 0; i < errorVector.length; i++) {
+
+            switch(m_function) {
+
+                case BINARY_STEP:
+
+                    break;
+                
+                case SIGMOID:
+                    errorVector[i] = 2 * (actualOutputs[i] - expectedOutputs[i]);
+                    errorVector[i] *= (1 / (1 + Math.pow(Math.E, -actualOutputs[i])));
+                    errorVector[i] *= (1 - 1 / (1 + Math.pow(Math.E, -actualOutputs[i])));
+                    break;
+
+            }
+
+        }
+
+        return errorVector;
 
     }
 
