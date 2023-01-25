@@ -1,199 +1,67 @@
-//-----[IMPORTS]-----\\
-
 import java.io.IOException;
 
-//-----[CLASS]-----\\
-/**
- * MnistDatabase
- * Singleton Class
- * 
- * Stores and provides access to the MNIST images and labels.
- * 
- * @author Joshua Savoie
- */
 public class MnistDatabase {
-
-    //-----[CONSTANTS]-----\\
-
-    //-----[VARIABLES]-----\\
-
+    
     private static MnistDatabase instance;
+    private DataPoint[] data;
 
-    private final MnistMatrix[] training;
-    private final MnistMatrix[] testing;
+    private MnistDatabase() {}
 
-    //-----[CONSTRUCTOR]-----\\
-    /**
-     * MnistDatabase
-     * Singleton Class
-     * 
-     * Stores and provides access to the MNIST images and labels.
-     * 
-     * @throws IOException
-     */
-    private MnistDatabase() throws IOException {
-        training = new MnistDataReader().readData("data/Input/train-images.idx3-ubyte", "data/Input/train-labels.idx1-ubyte");
-        testing = new MnistDataReader().readData("data/Input/t10k-images.idx3-ubyte", "data/Input/t10k-labels.idx1-ubyte");
-    }
-
-    //-----[METHODS]-----\\
-
-    /**
-     * getInstance()
-     * 
-     * Returns the singleton instance of MnistDatabase.
-     * @return
-     */
-    public static MnistDatabase getInstance() {
-
+    public static MnistDatabase getInstance(String dataFile, String labelFile) {
+        
         if(instance == null) {
-            try {
-                instance = new MnistDatabase();
-            } catch(IOException e) {
-                System.out.println(e.getMessage());
-                System.out.println(e.getStackTrace());
-                System.out.println(e.getCause());
-            }
+            instance = new MnistDatabase();
+            instance.loadData(dataFile, labelFile);
         }
 
         return instance;
-
-    }
-
-    /**
-     * getTrainingImageLabel()
-     * 
-     * Returns the label for an image in the training dataset.
-     * 
-     * @param imageNum
-     * @return
-     */
-    public int getTrainingImageLabel(int imageNum) {
-
-        assert imageNum < training.length: " imageNum out of bounds.";
-
-        MnistMatrix matrix = training[imageNum];
-
-        return matrix.getLabel();
-
-    }
-
-    /**
-     * getTrainingImageExpectedOutput()
-     * 
-     * @param imageNum
-     * @return
-     */
-    public double[] getTrainingImageExpectedOutputs(int imageNum) {
-
-        assert imageNum < training.length: " imageNum out of bounds.";
-
-        MnistMatrix matrix = training[imageNum];
-
-        return matrix.getExpectedOutputs();
-
-    }
-
-    /**
-     * getTrainingImageMatrix()
-     * 
-     * Returns the pixel values matrix for an image in the training dataset.
-     * 
-     * @param imageNum
-     * @return
-     */
-    public double[][] getTrainingImageMatrix(int imageNum) {
-
-        assert imageNum < training.length: " imageNum out of bounds.";
-
-        MnistMatrix matrix = training[imageNum];
-        double[][] pixels = new double[matrix.getNumberOfRows()][matrix.getNumberOfColumns()];
-
-        for (int r = 0; r < matrix.getNumberOfRows(); r++ ) {
-            for (int c = 0; c < matrix.getNumberOfColumns(); c++) {
-                pixels[r][c] = matrix.getValue(r, c);
-            }
-        }
-
-        return pixels;
         
     }
 
-    /**
-     * getTrainingDatasetSize()
-     * 
-     * @return
-     */
-    public int getTrainingDatasetSize() {
-        return training.length;
-    }
+    public MnistDatabase loadData(String dataFile, String labelFile) {
 
-    /**
-     * getTestingImageLabel()
-     * 
-     * Returns the label for an image in the testing dataset.
-     * 
-     * @param imageNum
-     * @return
-     */
-    public int getTestingImageLabel(int imageNum) {
-
-        assert imageNum < testing.length: " imageNum out of bounds.";
-
-        MnistMatrix matrix = testing[imageNum];
-
-        return matrix.getLabel();
-
-    }
-
-    /**
-     * getTestingImageExpectedOutput()
-     * 
-     * @param imageNum
-     * @return
-     */
-    public double[] getTestingImageExpectedOutputs(int imageNum) {
-
-        assert imageNum < testing.length: " imageNum out of bounds.";
-
-        MnistMatrix matrix = testing[imageNum];
-
-        return matrix.getExpectedOutputs();
-
-    }
-
-    /**
-     * getTestingImageMatrix()
-     * 
-     * Returns the pixel values matrix for an image in the testing dataset.
-     * 
-     * @param imageNum
-     * @return
-     */
-    public double[][] getTestingImageMatrix(int imageNum) {
-
-        assert imageNum < testing.length: " imageNum out of bounds.";
-
-        MnistMatrix matrix = testing[imageNum];
-        double[][] pixels = new double[matrix.getNumberOfRows()][matrix.getNumberOfColumns()];
-
-        for (int r = 0; r < matrix.getNumberOfRows(); r++ ) {
-            for (int c = 0; c < matrix.getNumberOfColumns(); c++) {
-                pixels[r][c] = matrix.getValue(r, c);
-            }
+        try {
+            data = new MnistDataReader().readData(dataFile, labelFile);
+        } catch(IOException e) {
+            e.printStackTrace();
+            return null;
         }
 
-        return pixels;
-        
+        return new MnistDatabase();
+
     }
 
-    /**
-     * getTestingDatasetSize()
-     * 
-     * @return
-     */
-    public int getTestingDatasetSize() {
-        return testing.length;
+    public DataPoint[] getData() {
+        return data;
     }
-    
+
+    public DataPoint getDataPoint(int index) {
+        return data[index];
+    }
+
+    public DataPoint[] getMiniBatch(int size) {
+
+        DataPoint[] miniBatch = new DataPoint[size];
+        boolean[] dupes = new boolean[data.length];
+        
+        for(int d = 0; d < dupes.length; d++) {
+            dupes[d] = false;
+        }
+
+        for(int s = 0; s < size; s++) {
+
+            int index = (int)(Math.random() * data.length);
+            if(!dupes[index]) {
+                dupes[index] = true;
+                miniBatch[s] = data[index];
+            } else {
+                s--;
+            }
+
+        }
+
+        return miniBatch;
+
+    }
+
 }

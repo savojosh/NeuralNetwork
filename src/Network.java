@@ -1,99 +1,14 @@
-//-----[IMPORTS]-----\\
-
-import java.io.File;
-
-//-----[CLASS]-----\\
-/**
- * Network
- * Class
- * 
- * Serves as a group of layers that work together to evaluate given inputs and calculate the best possible
- * decision from those given inputs.
- * 
- * @author Joshua Savoie
- */
 public class Network {
     
-    //-----[CONSTANTS]-----\\
+    private final int m_networkSize;
+    private final int m_numInputs;
 
-    //-----[VARIABLES]-----\\
-
-    // Folder to save the layers too.
     private String m_manifestFolder;
 
-    // Number of layers.
-    private int m_networkSize;
-    // Number of inputs (otherwise referred to the input layer or 0th layer).
-    private int m_numInputs;
-
-    // Each of the hidden layers and the output layer.
     private Layer[] m_layers;
 
-    // Activation function.
-    private Layer.Functions m_function;
+    public Network(String manifestFolder, int numInputs, int[] layerSizes) {
 
-    //-----[CONSTRUCTORS]-----\\
-
-    /**
-     * Network
-     * Copy Constructor
-     * 
-     * Used by copy()
-     */
-    private Network() {}
-
-    /**
-     * Network
-     * Retrieve Network Constructor
-     * 
-     * This constructor is used to retrieve an existing network from a manifest folder.
-     * 
-     * NOTE: The last layer acts as the output layer.
-     * NOTE: Using layers that don't follow the naming conventions in the New Network Constructor may result in errors.
-     * 
-     * @param manifestFolder = The location where the network is saved at. Must be an absolute path.
-     */
-    public Network(String manifestFolder) {
-
-        // Location for all network layer files to be stored.
-        m_manifestFolder = manifestFolder;
-
-        // Fetching the manifest folder and its contents.
-        File folder = new File(m_manifestFolder);
-        File[] files = folder.listFiles();
-
-        // Declaring the layers array
-        m_networkSize = files.length;
-        m_layers = new Layer[m_networkSize];
-
-        // Looping through the files and literally creating the layers.
-        for(int layer = 0; layer < m_networkSize; layer++) {
-            m_layers[layer] = new Layer(files[layer].getAbsolutePath());
-        }
-
-        // Gets the number of inputs taken in by the network.
-        m_numInputs = m_layers[0].getInputSize();
-
-        m_function = m_layers[0].getFunction();
-
-    }
-
-    /**
-     * Network
-     * New Network Constructor
-     * 
-     * Creates a new neural network with a given number of inputs and layer sizes.
-     * 
-     * NOTE: The last layer acts as the output layer.
-     * 
-     * @param manifestFolder = The location to save the network to when Network.save() is called. Must be an absolute path.
-     * @param numInputs
-     * @param layerSizes
-     * @param functions = The function used to calculate outputs.
-     */
-    public Network(String manifestFolder, int numInputs, int[] layerSizes, Layer.Functions function) {
-
-        // Location for all network layer files to be stored.
         m_manifestFolder = manifestFolder;
 
         m_networkSize = layerSizes.length;
@@ -101,257 +16,114 @@ public class Network {
 
         m_layers = new Layer[m_networkSize];
 
-        m_function = function;
+        m_layers[0] = new Layer(
+            m_manifestFolder + "\\Layer_" + String.format("%03d", 1),
+            layerSizes[0],
+            m_numInputs
+        );
+        for(int l = 1; l < m_networkSize; l++) {
 
-        // Creating all of the layers
-        for(int layer = 0; layer < m_networkSize; layer++) {
-
-            // If it is the first layer, use the number of inputs that was passed in.
-            if(layer == 0) {
-
-                m_layers[layer] = new Layer(
-                    m_manifestFolder + "\\Layer_" + String.format("%03d", layer + 1),
-                    layerSizes[layer],
-                    m_numInputs,
-                    m_function
-                );
-
-            // Else (not the first) pull the number of inputs for the layer from the previous layer.
-            } else {
-
-                m_layers[layer] = new Layer(
-                    m_manifestFolder + "\\Layer_" + String.format("%03d", layer + 1),
-                    layerSizes[layer],
-                    layerSizes[layer - 1],
-                    m_function
-                );
-                
-            }
-        }
-
-    }
-
-    //-----[METHODS]-----\\
-
-    /**
-     * cost()
-     * 
-     * Calculates the cost of a neural network's outputs compared to the expected outputs.
-     * 
-     * @param actualOutputs
-     * @param expectedOutputs
-     * @return
-     */
-    public double cost(double[] actualOutputs, double[] expectedOutputs) {
-
-        assert actualOutputs.length == expectedOutputs.length: " output arrays do not match in length.";
-
-        double cost = 0;
-
-        for(int out = 0; out < actualOutputs.length; out++) {
-
-            cost += Math.pow(expectedOutputs[out] - actualOutputs[out], 2);
-
-        }
-
-        return cost;
-
-    }
-
-    public double[] error(double[] actualOutputs, double[] expectedOutputs) {
-
-        assert actualOutputs.length == expectedOutputs.length: " output arrays do not match in length.";
-
-        double[] errorVector = new double[actualOutputs.length];
-
-        for(int i = 0; i < errorVector.length; i++) {
-
-            switch(m_function) {
-
-                case BINARY_STEP:
-
-                    break;
-                
-                case SIGMOID:
-                    errorVector[i] = 2 * (actualOutputs[i] - expectedOutputs[i]);
-                    errorVector[i] *= (1 / (1 + Math.pow(Math.E, -actualOutputs[i])));
-                    errorVector[i] *= (1 - 1 / (1 + Math.pow(Math.E, -actualOutputs[i])));
-                    break;
-
-            }
-
-        }
-
-        return errorVector;
-
-    }
-
-    /**
-     * learn()
-     * 
-     * Updates all weights and biases synchronously in all layers of the network.
-     * 
-     * @param cost = Acts as a multiplier to changes.
-     */
-    public void learn(double cost) {
-
-        // Loops through all of the layers and updates them.
-        for(int layer = 0; layer < m_networkSize; layer++) {
-
-            m_layers[layer].learn(cost);
+            m_layers[l] = new Layer(
+                m_manifestFolder + "\\Layer_" + String.format("%03d", l),
+                layerSizes[l],
+                layerSizes[l - 1]
+            );
 
         }
 
     }
 
-    /**
-     * calculate()
-     * 
-     * Takes in inputs, runs those inputs through the network, and returns a list of outputs.
-     * 
-     * These outputs can be used to make a decision.
-     * 
-     * @param inputs
-     * @return
-     * @throws Exception
-     */
-    public double[] calculate(double[] inputs) {
+    public double[] calculate(DataPoint dp) {
 
-        assert m_numInputs == inputs.length: " The set number of inputs does not match the actual number of inputs.";
+        assert dp.values.length == m_numInputs: " the number of inputs does not equal the number of inputs accepted by the network.";
+        assert dp.y.length == m_layers[m_layers.length - 1].getLayerSize(): " the number of outputs does not match the number of outputs returned by the network.";
 
-        // The last layer is the output layer.
-        double[] outputs = new double[m_layers[m_layers.length - 1].getLayerSize()];
-
-        // Loops through the layers and calculates the outputs of each.
-        for(int layer = 0; layer < m_networkSize; layer++) {
-
-            // If the first layer, calculate using the passed in inputs.
-            if(layer == 0) {
-
-                outputs = m_layers[layer].calculate(inputs);
-
-            // Else (not the first) calculate using the outputs from the previous layer.
-            } else {
-
-                outputs = m_layers[layer].calculate(outputs);
-
-            }
-
+        double[] outputs = m_layers[0].calculate(dp.values);
+        for(int l = 1; l < m_networkSize; l++) {
+            outputs = m_layers[l].calculate(outputs);
         }
 
         return outputs;
 
     }
 
-    /**
-     * save()
-     * 
-     * Stores the network and all of its layers into the manifest folder.
-     * 
-     * Creates the manifest folder and all of its parent directories should it not exist.
-     */
-    public void save() {
+    public double[][] learn(DataPoint[] data, double learnRate) {
 
-        try {
+        double[][] outputs = new double[data.length][data[0].y.length];
+        double[] cost = new double[data.length];
 
-            // Creates all directories specified in the manifest folder.
-            File folder = new File(m_manifestFolder);
-            folder.mkdirs();
+        for(int dp = 0; dp < data.length; dp++) {
 
-            for(int layer = 0; layer < m_networkSize; layer++) {
+            outputs[dp] = calculate(data[dp]);
 
-                m_layers[layer].save();
+            // handles the output layer gradient
+            double[] errors = new double[m_layers[m_layers.length - 1].getLayerSize()];
+            cost[dp] = 0;
+            for(int o = 0; o < data[dp].y.length; o++) {
+                double a = outputs[dp][o];
+                double y = data[dp].y[o];
+                double z = m_layers[m_layers.length - 1].getZVector()[o];
+                errors[o] = 2 * (a - y) * Functions.dSigmoid(z);
+                cost[dp] += Math.pow(a - y, 2);
+            }
+            cost[dp] = cost[dp] / data[dp].y.length;
 
+            if(m_layers.length > 1) {
+                m_layers[m_layers.length - 1].updateGradient(errors, m_layers[m_layers.length - 2].getOutputVector());
+
+                // handles all intermediate layers' gradients
+                for(int l = m_layers.length - 2; l >= 0; l--) {
+
+                    double[] previousErrors = errors.clone();
+                    double[][] outWeights = m_layers[l + 1].getWeights();
+                    errors = new double[m_layers[l].getLayerSize()];
+
+                    for(int cn = 0; cn < errors.length; cn++) {
+
+                        double error = 0;
+
+                        for(int nn = 0; nn < outWeights.length; nn++) {
+
+                            double w = outWeights[nn][cn];
+                            double e = previousErrors[nn];
+                            double z = m_layers[l].getZVector()[cn];
+                            error += w * e * Functions.dSigmoid(z);
+
+                        }
+
+                        errors[cn] = error / outWeights.length;
+                        
+                    }
+
+                    if(l > 0) {
+                        m_layers[l].updateGradient(errors, m_layers[l - 1].getOutputVector());
+                    } else {
+                        m_layers[l].updateGradient(errors, data[dp].values);
+                    }
+
+                }
+                
+            } else {
+                m_layers[m_layers.length - 1].updateGradient(errors, data[dp].values);
             }
 
-        } catch(Exception e) {
+        }
 
-            System.out.println(e.getMessage());
+        for(int l = m_layers.length - 1; l >= 0; l--) {
 
-            System.exit(0);
+            m_layers[l].applyGardient(learnRate);
 
         }
 
-    }
-
-    /**
-     * setManifestFolder
-     * 
-     * Sets the manifest folder to a location.
-     * 
-     * @param manifestFolder = Absolute path to the folder.
-     */
-    public void setManifestFolder(String manifestFolder) {
-
-        m_manifestFolder = manifestFolder;
-
-        for(int layer = 0; layer < m_networkSize; layer++) {
-
-            m_layers[layer].setManifestFile(m_manifestFolder + "\\Layer_" + String.format("%03d", layer + 1));
-
+        double avgCost = 0;
+        for(double c : cost) {
+            avgCost += c;
         }
+        avgCost = avgCost / cost.length;
+        System.out.println(avgCost);
 
-    }
+        return outputs;
 
-    //-----[COPY]-----\\
-
-    /**
-     * copy()
-     * 
-     * Returns a new instance of class Network with all the same member variable values.
-     * 
-     * @return
-     */
-    public Network copy() {
-
-        Network c = new Network();
-
-        c.copyManifest(m_manifestFolder);
-        c.copyNetworkSize(m_networkSize);
-        c.copyNumInputs(m_numInputs);
-        c.copyLayers(m_layers);
-
-        return c;
-
-    }
-
-    /**
-     * copyManifest()
-     * 
-     * @param toCopy
-     */
-    private void copyManifest(String toCopy) {
-        m_manifestFolder = new String(toCopy);
-    }
-
-    /**
-     * copyNetworkSize()
-     * 
-     * @param toCopy
-     */
-    private void copyNetworkSize(int toCopy) {
-        m_networkSize = toCopy;
-    }
-
-    /**
-     * copyNumInputs()
-     * 
-     * @param toCopy
-     */
-    private void copyNumInputs(int toCopy) {
-        m_numInputs = toCopy;
-    }
-
-    /**
-     * copyLayers()
-     * 
-     * @param toCopy
-     */
-    private void copyLayers(Layer[] toCopy) {
-        m_layers = new Layer[toCopy.length];
-        for(int i = 0; i < toCopy.length; i++) {
-            m_layers[i] = toCopy[i].copy();
-        }
     }
 
 }

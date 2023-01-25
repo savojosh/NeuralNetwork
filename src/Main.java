@@ -1,100 +1,65 @@
-//-----[IMPORTS]-----\\
+import java.util.ArrayList;
 
-import java.util.Scanner;
-
-//-----[CLASS]-----\\
-/**
- * Main
- * Driver Class
- * 
- * @author Joshua Savoie
- */
 public class Main {
+    
+    public static void main(String[] args) throws Exception {
 
-    /**
-     * main()
-     * 
-     * Driver method.
-     * 
-     * @param args
-     */
-    public static void main(String[] args) {
+        String dataFile = "data/Input/train-images.idx3-ubyte";
+        String labelFile = "data/Input/train-labels.idx1-ubyte";
+        MnistDatabase database = MnistDatabase.getInstance(dataFile, labelFile);
+        int[] layerSizes = {16, 16, 10};
+        Network network = new Network(
+            "",
+            784,
+            layerSizes
+        );
 
-        Scanner keyboard = new Scanner(System.in);
+        double learnRate = 0.35;
+        int epochs = 1000000;
+        int miniBatchSize = 1000;
+        ArrayList<Integer> scores = new ArrayList<Integer>();
 
-        Population population = null;
-        Simulation simulation = null;
+        DataPoint[] miniBatch = database.getMiniBatch(miniBatchSize);
 
-        int generation = 0;
-        int populationSize = 0;
-        int graduationSize = 0;
-        int[] layerSizes = null;
-        Layer.Functions function = null;
-        String storePath = "";
+        for(int e = 0; e < epochs; e++) {
 
-        int populationOption = 0;
-        while(populationOption != 1 && populationOption != 2) {
-            System.out.println("\nWhat population would you like to use?");
-            System.out.println("    1 | New Population");
-            System.out.println("    2 | Existing Population");
-            populationOption = Integer.parseInt(keyboard.nextLine());
-        }
+            miniBatch = database.getMiniBatch(miniBatchSize);
 
-        if(populationOption == 1) {
+            double[][] results = network.learn(miniBatch, learnRate);
 
-            System.out.println("\nPopulation size?");
-            populationSize = Integer.parseInt(keyboard.nextLine());
+            int score = 0;
+            for(int i = 0; i < results.length; i++) {
 
-            System.out.println("\nLayer sizes?");
-            System.out.println("Specify layer sizes by integers split by commas.");
-            System.out.println("Example = 16,16,10");
-            String[] inputs = keyboard.nextLine().split(",");
-            layerSizes = new int[inputs.length];
-            for(int l = 0; l < layerSizes.length; l++) layerSizes[l] = Integer.parseInt(inputs[l]);
-            
-            System.out.println("\nChoose an activation function:");
-            for(int f = 0; f < Layer.Functions.values().length; f++) {
-                System.out.println("   " + Layer.Functions.values()[f].saveString);
-            }
-            System.out.println("Copy and paste the name of the desired activation function.");
-            while(function == null) {
-                String funcName = keyboard.nextLine();
-                for(int f = 0; f < Layer.Functions.values().length; f++) {
-                    if(funcName.equals(Layer.Functions.values()[f].saveString)) {
-                        function = Layer.Functions.values()[f];
+                double[] result = results[i];
+
+                int d = 0;
+                for(int r = 1; r < result.length; r++) {
+                    if(result[r] > result[d]) {
+                        d = r;
                     }
                 }
+
+                if(d == miniBatch[i].label) {
+                    score++;
+                }
+
             }
 
-            System.out.println("\nPlease specify an absolute path to a folder to store neural network generations at:");
-            storePath = keyboard.nextLine();
+            scores.add(score);
+            if(scores.size() > 20) {
+                scores.remove(0);
+            }
 
-        } else if(populationOption == 2) {
+            int avg = 0;
+            for(int i = 0; i < scores.size(); i++) {
+                avg += scores.get(i);
+            }
+            avg = (int)(avg / scores.size());
 
-            System.out.println("\nWhich generation would you like to start from?");
-            generation = Integer.parseInt(keyboard.nextLine());
-
-            System.out.println("\nPlease specify the absolute path to the parent folder of the desired generation.");
-            storePath = keyboard.nextLine();
+            System.out.println(e + "\t\t" + score + " / " + miniBatch.length + " with an average score of " + avg + " / " + miniBatch.length);
 
         }
-
-        System.out.println("\nPopulation graduation size?");
-        graduationSize = Integer.parseInt(keyboard.nextLine());
-
-        if(populationOption == 1) {
-            population = new Population(storePath, populationSize, layerSizes, 784, function);
-        } else if(populationOption == 2) {
-            population = new Population(storePath, generation);
-        }
-
-        simulation = new Simulation(graduationSize, population, MnistProcess.class);
-
-        System.out.println();
-        keyboard.close();
-
-        simulation.run();
 
     }
-    
+
 }
