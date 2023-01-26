@@ -14,9 +14,9 @@ public class Main {
             layerSizes
         );
 
-        double learnRate = 0.35;
+        double learnRate = 0.1;
         int epochs = 1000000;
-        int miniBatchSize = 1000;
+        int miniBatchSize = 2000;
         ArrayList<Integer> scores = new ArrayList<Integer>();
 
         DataPoint[] miniBatch = database.getMiniBatch(miniBatchSize);

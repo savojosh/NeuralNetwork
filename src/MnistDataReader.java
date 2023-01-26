@@ -1,9 +1,27 @@
+//-----[IMPORTS]-----\\
 import java.io.*;
+
+//-----[CLASS]-----\\
 /**
+ * MnistDataReader
+ * Class
+ * 
+ * Retrieves the MNIST data.
+ * 
  * @author turkdogan, Joshua Savoie
  */
 public class MnistDataReader  {
 
+    /**
+     * readData()
+     * 
+     * Reads the MNIST data from the given files.
+     * 
+     * @param dataFilePath - The MNIST file to pull data values from.
+     * @param labelFilePath - The MNIST file to pull correct labels from.
+     * @return
+     * @throws IOException
+     */
     public DataPoint[] readData(String dataFilePath, String labelFilePath) throws IOException {
 
         DataInputStream dataInputStream = new DataInputStream(new BufferedInputStream(new FileInputStream(dataFilePath)));
@@ -12,17 +30,9 @@ public class MnistDataReader  {
         int nRows = dataInputStream.readInt();
         int nCols = dataInputStream.readInt();
 
-        // System.out.println("magic number is " + magicNumber);
-        // System.out.println("number of items is " + numberOfItems);
-        // System.out.println("number of rows is: " + nRows);
-        // System.out.println("number of cols is: " + nCols);
-
         DataInputStream labelInputStream = new DataInputStream(new BufferedInputStream(new FileInputStream(labelFilePath)));
         int labelMagicNumber = labelInputStream.readInt();
         int numberOfLabels = labelInputStream.readInt();
-
-        // System.out.println("labels magic number is: " + labelMagicNumber);
-        // System.out.println("number of labels is: " + numberOfLabels);
 
         DataPoint[] data = new DataPoint[numberOfItems];
 

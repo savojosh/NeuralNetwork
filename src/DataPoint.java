@@ -1,9 +1,33 @@
+//-----[IMPORTS]-----\\
+
+//-----[CLASS]-----\\
+/**
+ * DataPoint
+ * Class
+ * 
+ * Stores the relevant data to a specific case.
+ * 
+ * @author Joshua Savoie
+ */
 public class DataPoint {
+
+    //-----[VARIABLES]-----\\
     
     public final int label;
     public final double[] values;
     public final double[] y;
 
+    //-----[CONSTRUCTOR]-----\\
+    /**
+     * DataPoint
+     * Constructor
+     * 
+     * Creates a data point.
+     * 
+     * @param label - The expected decision. Often the largest positive value in double[] y.
+     * @param values - The input values for the neural network.
+     * @param y - The expected outputs from the neural network.
+     */
     public DataPoint(int label, double[] values, double[] y) {
 
         // Get the max magnitude of a value.
