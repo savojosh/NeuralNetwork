@@ -15,34 +15,18 @@ public class MnistDatabase implements Database {
 
     //-----[VARIABLES]-----\\
     
-    private static MnistDatabase instance;
     private DataPoint[] data;
 
     //-----[CONSTRUCTOR]-----\\
     /**
      * MnistDatabase
      * Constructor
-     */
-    private MnistDatabase() {}
-
-    /**
-     * getInstance()
      * 
-     * Creates a singleton instance of the MnistDatabase.
-     * 
-     * @param dataFile - The MNIST file to pull data values from.
-     * @param labelFile - The MNIST file to pull correct labels from.
-     * @return
+     * @param dataFile
+     * @param labelFile
      */
-    public static MnistDatabase getInstance(String dataFile, String labelFile) {
-        
-        if(instance == null) {
-            instance = new MnistDatabase();
-            instance.loadData(dataFile, labelFile);
-        }
-
-        return instance;
-        
+    public MnistDatabase(String dataFile, String labelFile) {
+        loadData(dataFile, labelFile);
     }
 
     //-----[METHODS]-----\\
@@ -91,18 +75,18 @@ public class MnistDatabase implements Database {
     }
 
     /**
-     * getMiniBatch()
+     * generateMiniBatches()
      * 
-     * Gets a mini-batch of the data.
+     * Generates some number of minibatche of the data.
      * The mini-batch generated is a set of randomly selected data points with no duplicates.
      * 
      * @param size - The size of the mini-batch.
      * @return
      */
     @Override
-    public DataPoint[] getMiniBatch(int size) {
+    public DataPoint[][] generateMiniBatches(int size) {
 
-        DataPoint[] miniBatch = new DataPoint[size];
+        DataPoint[][] miniBatches = new DataPoint[data.length / size][size];
 
         // Makes sure there is no duplicate data.
         boolean[] dupes = new boolean[data.length];
@@ -110,20 +94,22 @@ public class MnistDatabase implements Database {
             dupes[d] = false;
         }
 
-        for(int s = 0; s < size; s++) {
+        for(int m = 0; m < miniBatches.length; m++) {
+            for(int s = 0; s < size; s++) {
 
-            // Selects from the database where data.length is excluded. Selection: 0 - (data.length - 1)
-            int index = (int)(Math.random() * data.length);
-            if(!dupes[index]) {
-                dupes[index] = true;
-                miniBatch[s] = data[index];
-            } else {
-                s--;
+                // Selects from the database where data.length is excluded. Selection: 0 - (data.length - 1)
+                int index = (int)(Math.random() * data.length);
+                if(!dupes[index]) {
+                    dupes[index] = true;
+                    miniBatches[m][s] = data[index]; 
+                } else {
+                    s--;
+                }
+
             }
-
         }
 
-        return miniBatch;
+        return miniBatches;
 
     }
 

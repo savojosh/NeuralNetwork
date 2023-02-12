@@ -42,7 +42,8 @@ public class Layer {
     // The most recent outputs with the activation function applied
     private double[] m_outputVector;
 
-    //-----[CONSTRUCTOR]-----\\
+    //-----[CONSTRUCTORS]-----\\
+
     /**
      * Layer
      * Constructor
@@ -78,8 +79,42 @@ public class Layer {
                 m_weightsGradient[n][w] = 0;
             }
         }
-
     }
+
+    /**
+     * Layer
+     * Constructor
+     * 
+     * Constructor only meant for copying a layer.
+     * 
+     * @param manifestFile
+     * @param layerSize
+     * @param numInputs
+     * @param biases
+     * @param weights
+     * @param biasesGradient
+     * @param weightsGradient
+     * @param zVector
+     * @param outputVector
+     */
+    private Layer(
+        String manifestFile, int layerSize, int numInputs, 
+        double[] biases, double[][] weights, 
+        double[] biasesGradient, double[][] weightsGradient, 
+        double[] zVector, double[] outputVector
+    ) {
+        m_manifestFile = manifestFile;
+        m_layerSize = layerSize;
+        m_numInputs = numInputs;
+        m_biases = biases;
+        m_weights = weights;
+        m_biasesGradient = biasesGradient;
+        m_weightsGradient = weightsGradient;
+        m_zVector = zVector;
+        m_outputVector = outputVector;
+    }
+
+    //-----[METHODS]-----\\
 
     /**
      * calculate()
@@ -101,7 +136,7 @@ public class Layer {
         // summation(w * i + b)
         for(int n = 0; n < m_layerSize; n++) {
             
-            double out = m_biases[n];
+            double out = 0;//m_biases[n];
 
             for(int i = 0; i < m_numInputs; i++) {
                 out += (m_weights[n][i] * inputs[i]);
@@ -242,6 +277,22 @@ public class Layer {
      */
     public int getLayerSize() {
         return m_layerSize;
+    }
+
+    /**
+     * copy()
+     * 
+     * Returns a copy of the scoped layer.
+     * 
+     * @return
+     */
+    public Layer clone() {
+        return new Layer(
+            new String(m_manifestFile), m_layerSize, m_numInputs, 
+            m_biases.clone(), m_weights.clone(), 
+            m_biasesGradient.clone(), m_weightsGradient.clone(), 
+            m_zVector.clone(), m_outputVector.clone()
+        );
     }
 
 }

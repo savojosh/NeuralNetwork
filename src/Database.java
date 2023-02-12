@@ -11,6 +11,6 @@ public interface Database {
     
     public DataPoint[] getData();
     public DataPoint getDataPoint(int index);
-    public DataPoint[] getMiniBatch(int size);
+    public DataPoint[][] generateMiniBatches(int size);
 
 }

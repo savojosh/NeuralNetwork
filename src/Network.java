@@ -21,7 +21,8 @@ public class Network {
 
     private Layer[] m_layers;
 
-    //-----[CONSTRUCTOR]-----\\
+    //-----[CONSTRUCTORS]-----\\
+
     /**
      * Network
      * Constructor
@@ -57,6 +58,24 @@ public class Network {
 
         }
 
+    }
+
+    /**
+     * Network()
+     * Constructor
+     * 
+     * Constructor only meant for copying a network.
+     * 
+     * @param manifestFolder
+     * @param networkSize
+     * @param numInputs
+     * @param layers
+     */
+    private Network(String manifestFolder, int networkSize, int numInputs, Layer[] layers) {
+        m_manifestFolder = manifestFolder;
+        m_networkSize = networkSize;
+        m_numInputs = numInputs;
+        m_layers = layers;
     }
 
     //-----[METHODS]-----\\
@@ -190,9 +209,23 @@ public class Network {
 
         }
 
-        System.out.println(cost / (data.length * data[0].y.length));
-
         return outputs;
+
+    }
+
+    /**
+     * clone()
+     * 
+     * Creates a copy of this neural network.
+     */
+    public Network clone() {
+
+        Layer[] newLayers = new Layer[m_layers.length];
+        for(int l = 0; l < newLayers.length; l++) {
+            newLayers[l] = m_layers[l].clone();
+        }
+
+        return new Network(new String(m_manifestFolder), m_networkSize, m_numInputs, m_layers);
 
     }
 
