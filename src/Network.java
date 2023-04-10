@@ -133,7 +133,7 @@ public class Network {
                 double z = m_layers[m_layers.length - 1].getZVector()[o];
 
                 // dC/da * derivative of the activation function
-                errors[o] = (2 * (a - y)) * (Functions.dSigmoid(z));
+                errors[o] = (2 * (a - y)) * (Functions.dBinarySigmoid(z));
 
                 cost += Math.pow(a - y, 2);
 
@@ -178,7 +178,7 @@ public class Network {
                              * multiplied by the derivative of the activation function calculated with layer[L]'s node[cn]'s
                              * output without the activation function applied.
                              */
-                            errors[cn] += w * e * Functions.dSigmoid(z);
+                            errors[cn] += w * e * Functions.dBinarySigmoid(z);
 
                         }
 

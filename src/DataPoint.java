@@ -24,7 +24,7 @@ public class DataPoint {
      * 
      * Creates a data point.
      * 
-     * @param label - The expected decision. Often the largest positive value in double[] y.
+     * @param label - The expected decision. Often the largest positive value in double[] y. 0 index'd.
      * @param values - The input values for the neural network.
      * @param y - The expected outputs from the neural network.
      */

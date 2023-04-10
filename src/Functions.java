@@ -14,27 +14,51 @@ public class Functions {
     //-----[SIGMOID]-----\\
 
     /**
-     * sigmoid()
+     * binarySigmoid()
      * 
-     * Regular sigmoid.
+     * Binary sigmoid.
      * 
      * @param x
-     * @return 1 / (1 + e^-x)
+     * @return f(x) = 1 / (1 + e^-x)
      */
-    public static double sigmoid(double x) {
+    public static double binarySigmoid(double x) {
         return 1 / (1 + Math.pow(Math.E, -x));
     }
 
     /**
-     * dSigmoid()
+     * dBinarySigmoid()
      * 
-     * Derivative of regular sigmoid.
+     * Derivative of binary sigmoid.
      * 
      * @param x
-     * @return sigmoid(x) * (1 - sigmoid(x))
+     * @return f'(x) = f(x) * (1 - f(x))
      */
-    public static double dSigmoid(double x) {
-        return sigmoid(x) * (1 - sigmoid(x));
+    public static double dBinarySigmoid(double x) {
+        return binarySigmoid(x) * (1 - binarySigmoid(x));
+    }
+
+    /**
+     * binarySigmoid()
+     * 
+     * Binary sigmoid.
+     * 
+     * @param x
+     * @return f(x) = 1 / (1 + e^-x)
+     */
+    public static double bipolarSigmoid(double x) {
+        return -1 + 2 / (1 + Math.pow(Math.E, -x));
+    }
+
+    /**
+     * dBinarySigmoid()
+     * 
+     * Derivative of binary sigmoid.
+     * 
+     * @param x
+     * @return f'(x) = 0.5 * (1 + f(x)) * (1 - f(x))
+     */
+    public static double dBipolarSigmoid(double x) {
+        return 0.5 * (1 + bipolarSigmoid(x)) * (1 - bipolarSigmoid(x));
     }
 
 }

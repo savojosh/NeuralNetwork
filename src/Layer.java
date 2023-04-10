@@ -145,7 +145,7 @@ public class Layer {
             m_zVector[n] = out;
 
             // Applies the activation function
-            outputs[n] = Functions.sigmoid(out);
+            outputs[n] = Functions.binarySigmoid(out);
 
         }
 

@@ -8,7 +8,7 @@ import java.util.ArrayList;
  * Class
  * 
  * Represents a population of neural networks.
- * Based on the Population-Based Training algorithm
+ * Based on the Population-Based Training algorithm.
  * developed by Google Deepmind.
  */
 public class Population extends Thread {
