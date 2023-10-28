@@ -136,7 +136,7 @@ public class Layer {
         // summation(w * i + b)
         for(int n = 0; n < m_layerSize; n++) {
             
-            double out = 0;//m_biases[n];
+            double out = m_biases[n];
 
             for(int i = 0; i < m_numInputs; i++) {
                 out += (m_weights[n][i] * inputs[i]);
@@ -145,7 +145,7 @@ public class Layer {
             m_zVector[n] = out;
 
             // Applies the activation function
-            outputs[n] = Functions.binarySigmoid(out);
+            outputs[n] = Functions.bipolarSigmoid(out);
 
         }
 

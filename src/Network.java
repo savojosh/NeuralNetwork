@@ -21,6 +21,8 @@ public class Network {
 
     private Layer[] m_layers;
 
+    public double m_cost = 0;
+
     //-----[CONSTRUCTORS]-----\\
 
     /**
@@ -133,7 +135,7 @@ public class Network {
                 double z = m_layers[m_layers.length - 1].getZVector()[o];
 
                 // dC/da * derivative of the activation function
-                errors[o] = (2 * (a - y)) * (Functions.dBinarySigmoid(z));
+                errors[o] = (2 * (a - y)) * (Functions.dBipolarSigmoid(z));
 
                 cost += Math.pow(a - y, 2);
 
@@ -178,7 +180,7 @@ public class Network {
                              * multiplied by the derivative of the activation function calculated with layer[L]'s node[cn]'s
                              * output without the activation function applied.
                              */
-                            errors[cn] += w * e * Functions.dBinarySigmoid(z);
+                            errors[cn] += w * e * Functions.dBipolarSigmoid(z);
 
                         }
 
@@ -208,6 +210,8 @@ public class Network {
             m_layers[l].applyGardient(data.length, learnRate);
 
         }
+
+        m_cost = cost / data.length;
 
         return outputs;
 

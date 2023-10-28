@@ -11,7 +11,7 @@ public class Main {
         String testingLabelFile = "data/Input/t10k-labels.idx1-ubyte";
         MnistDatabase trainingData = new MnistDatabase(trainingDataFile, trainingLabelFile);
         MnistDatabase testingData = new MnistDatabase(testingDataFile, testingLabelFile);
-        int[] layerSizes = {50, 10};
+        int[] layerSizes = {50, 50, 10};
 
         // Population population = new Population(5, layerSizes, trainingData, testingData);
 
@@ -29,9 +29,7 @@ public class Main {
         double learnRate = 0.05;
         int epochs = 1000000;
         
-        int miniBatchSize = 240;
-
-        ArrayList<Integer> scores = new ArrayList<Integer>();
+        int miniBatchSize = 480;
 
         DataPoint[][] miniBatches = trainingData.generateMiniBatches(miniBatchSize);
 
@@ -64,23 +62,17 @@ public class Main {
                  
             }
 
-            scores.add(score);
-            if(scores.size() > 20) {
-                scores.remove(0);
-            }
+            System.out.println(
+                e + "\t\t" + score + " / " + miniBatchSize * miniBatches.length
+                + "\t\tCost: " + network.m_cost
+            );
 
-            int avg = 0;
-            for(int i = 0; i < scores.size(); i++) {
-                avg += scores.get(i);
-            }
-            avg = (int)(avg / scores.size());
-
-            System.out.println(e + "\t\t" + score + " / " + miniBatchSize * miniBatches.length + " with an average score of " + avg + " / " + miniBatchSize * miniBatches.length);
-
-            if(Math.random() > 0.9) {
+            if(Math.random() > 0.8) {
                 miniBatches = trainingData.generateMiniBatches(miniBatchSize);
                 System.out.println("\t\tShuffled the mini-batches.  ");
             }
+
+            // if(e > 20) learnRate -= 0.0001;
 
         }
 

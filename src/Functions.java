@@ -38,7 +38,7 @@ public class Functions {
     }
 
     /**
-     * binarySigmoid()
+     * bipolarSigmoid()
      * 
      * Binary sigmoid.
      * 
@@ -50,7 +50,7 @@ public class Functions {
     }
 
     /**
-     * dBinarySigmoid()
+     * dBipolarSigmoid()
      * 
      * Derivative of binary sigmoid.
      * 
