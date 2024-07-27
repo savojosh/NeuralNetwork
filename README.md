@@ -1,24 +1,47 @@
 # Base Neural Network
 
-## v1.0.0
+---
+
+The training of neural networks is centered in Simulation.java. This Simulation class utilizes PBT, or population-based training. PBT, in summary, acts as a hybrid approach merging the random search and hand-tuning methods. This is accomplished by having a population of neural networks (Population.java), each with random hyperparameters (mimicking the random search method), are run through a set of training data. From there, the highest scoring neural networks, known as the graduation class, are kept while the others are replaced with variations of the graduated neural networks.
 
 ---
 
-This project contains a Network.java and Layer.java file for the source code. These two files are made to be versatile and fit to any need.
+## Instructions to Run
 
-I did not, however, create a Trainer.java or Generation.java or the likes because that can vary widely depending on the need, but this is on the list for future updates to this project.
+---
 
-One question that may be raised, "why Java as opposed to, for example, Python?" The answer: organization. Although it would be more efficient and allow for easier interactions with a Python data mining application, it made more sense conceptually in my head writing it in Java. This, however, may too be another possible update to this project (conversion from Java to Python) at some point in the future.
+1. Run the program like normal. "CTRL + F5" or simply "F5."
+2. Once the program is running, a prompt will begin.
 
-Going away from future plans for this project, the data folder contains an "EXAMPLE-Network_001." This folder does not contain a network, but rather exemplifies how the save files are structured.
+    i. Answer each question exactly as how it prompts you to.
 
-P.S. Some notable videos that I watched to better understand neural networks are below:
+3. Sit back and let it run.
+
+    i. This can be stopped at any time.
+
+    ii. Do note, while it is running, it will be saving files to whatever path you specified. It will, potentially, take up GBs worth of storage if you let it run for an extended period of time. This can be stopped by changing the return String of Population.java's getGenerationFolder() method. Instructions for performing this change are located in Population.java's getGenerationFolder() method.
+
+---
+
+## Resources
+
+---
+
+Some notable videos that I watched to introduce me to and better understand the general concepts of neural networks are below:
 - Gave me example problems to solve using the neural network. https://www.youtube.com/watch?v=hfMk-kjRv4c
 - Provides a real neat abstraction using a piece of paper. https://www.youtube.com/watch?v=e5xKayCBOeU
 - Helped with understanding the key concepts behind neural networks. https://www.youtube.com/watch?v=piF6D6CQxUw
 - The math. https://www.youtube.com/watch?v=w8yWXqWQYmU
 - Explains neural networks in really basic terms. https://www.youtube.com/watch?v=CqOfi41LfDw
+- An amazing introduction into otherwise daunting concepts. https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi
+- Population Based Training: https://www.youtube.com/watch?v=pEANQ8uau88&t=66
+
+Notable Posts and Articles:
+- Learning Rate: https://machinelearningmastery.com/understand-the-dynamics-of-learning-rate-on-deep-learning-neural-networks/
+- Weight Regularization: https://machinelearningmastery.com/weight-regularization-to-reduce-overfitting-of-deep-learning-models/
+- Minibatch: https://scontent-msp1-1.xx.fbcdn.net/v/t39.8562-6/240818965_455586748763065_8609026679315857149_n.pdf?_nc_cat=111&ccb=1-7&_nc_sid=ad8a9d&_nc_ohc=_Tjlwa1D8wAAX-QKlkV&_nc_ht=scontent-msp1-1.xx&oh=00_AfAkfundMvNOw6Jty0KyMVtO8M1sxj8GoMo6kcc_89m2VQ&oe=638D1BA3
+- Population Based Training: https://www.deepmind.com/blog/population-based-training-of-neural-networks
 
 ---
 
-This project is licensed under the terms of the GNU General Public License v3.0.
+This project is licensed under the terms of the MIT License.

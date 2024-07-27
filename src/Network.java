@@ -1,177 +1,103 @@
 //-----[IMPORTS]-----\\
 
-import java.io.File;
-
 //-----[CLASS]-----\\
 /**
  * Network
  * Class
  * 
- * Serves as a group of layers that work together to evaluate given inputs and calculate the best possible
- * decision from those given inputs.
- * 
- * @author savojosh
+ * A perceptron neural network.
  */
 public class Network {
-    
-    //-----[CONSTANTS]-----\\
 
     //-----[VARIABLES]-----\\
-
-    // Folder to save the layers too.
+    
+    // Folder location to save all layer files to
     private String m_manifestFolder;
 
-    // Number of layers.
-    private int m_networkSize;
-    // Number of inputs (otherwise referred to the input layer or 0th layer).
-    private int m_numInputs;
+    // The number of layers
+    private final int m_networkSize;
+    // The number of incoming inputs into the neural network as a whole
+    private final int m_numInputs;
 
-    // Each of the hidden layers and the output layer.
     private Layer[] m_layers;
+
+    public double m_cost = 0;
 
     //-----[CONSTRUCTORS]-----\\
 
     /**
      * Network
-     * Retrieve Network Constructor
+     * Constructor
      * 
-     * This constructor is used to retrieve an existing network from a manifest folder.
+     * Creates a perception neural network.
      * 
-     * NOTE: The last layer acts as the output layer.
-     * NOTE: Using layers that don't follow the naming conventions in the New Network Constructor may result in errors.
-     * 
-     * @param manifestFolder = The location where the network is saved at. Must be an absolute path.
+     * @param manifestFolder - Folder location to save all layer files to.
+     * @param numInputs - The number of inputs into the neural network.
+     * @param layerSizes - The layers of each layer in the network. Does not include the input layer.
      */
-    public Network(String manifestFolder) {
+    public Network(String manifestFolder, int numInputs, int[] layerSizes) {
 
-        // Location for all network layer files to be stored.
-        m_manifestFolder = manifestFolder;
-
-        // Fetching the manifest folder and its contents.
-        File folder = new File(m_manifestFolder);
-        File[] files = folder.listFiles();
-
-        // Declaring the layers array
-        m_networkSize = files.length;
-        m_layers = new Layer[m_networkSize];
-
-        // Looping through the files and literally creating the layers.
-        for(int layer = 0; layer < m_networkSize; layer++) {
-            m_layers[layer] = new Layer(files[layer].getAbsolutePath());
-        }
-
-        // Gets the number of inputs taken in by the network.
-        m_numInputs = m_layers[0].getInputSize();
-
-    }
-
-    /**
-     * Network
-     * New Network Constructor
-     * 
-     * Creates a new neural network with a given number of inputs and layer sizes.
-     * 
-     * NOTE: The last layer acts as the output layer.
-     * 
-     * @param manifestFolder = The location to save the network to when Network.save() is called. Must be an absolute path.
-     * @param numInputs
-     * @param layerSizes
-     * @param functions = The function used to calculate outputs.
-     */
-    public Network(String manifestFolder, int numInputs, int[] layerSizes, Layer.Functions function) {
-
-        // Location for all network layer files to be stored.
         m_manifestFolder = manifestFolder;
 
         m_networkSize = layerSizes.length;
         m_numInputs = numInputs;
 
+        // Creating all of the layers
         m_layers = new Layer[m_networkSize];
 
-        // Creating all of the layers
-        for(int layer = 0; layer < m_networkSize; layer++) {
+        m_layers[0] = new Layer(
+            m_manifestFolder + "\\Layer_" + String.format("%03d", 1),
+            layerSizes[0],
+            m_numInputs
+        );
+        for(int l = 1; l < m_networkSize; l++) {
 
-            // If it is the first layer, use the number of inputs that was passed in.
-            if(layer == 0) {
+            m_layers[l] = new Layer(
+                m_manifestFolder + "\\Layer_" + String.format("%03d", l + 1),
+                layerSizes[l],
+                layerSizes[l - 1]
+            );
 
-                m_layers[layer] = new Layer(
-                    m_manifestFolder + "\\Layer_" + String.format("%03d", layer + 1),
-                    layerSizes[layer],
-                    m_numInputs,
-                    function
-                );
-
-            // Else (not the first) pull the number of inputs for the layer from the previous layer.
-            } else {
-
-                m_layers[layer] = new Layer(
-                    m_manifestFolder + "\\Layer_" + String.format("%03d", layer + 1),
-                    layerSizes[layer],
-                    layerSizes[layer - 1],
-                    function
-                );
-                
-            }
         }
 
+    }
+
+    /**
+     * Network()
+     * Constructor
+     * 
+     * Constructor only meant for copying a network.
+     * 
+     * @param manifestFolder
+     * @param networkSize
+     * @param numInputs
+     * @param layers
+     */
+    private Network(String manifestFolder, int networkSize, int numInputs, Layer[] layers) {
+        m_manifestFolder = manifestFolder;
+        m_networkSize = networkSize;
+        m_numInputs = numInputs;
+        m_layers = layers;
     }
 
     //-----[METHODS]-----\\
 
     /**
-     * update()
-     * 
-     * Updates all weights and biases synchronously in all layers of the network.
-     * 
-     * @param actualScore
-     * @param desiredScore
-     */
-    public void update(int actualScore, int desiredScore) {
-
-        // Loops through all of the layers and updates them.
-        for(int layer = 0; layer < m_networkSize; layer++) {
-
-            m_layers[layer].update(actualScore, desiredScore);
-
-        }
-
-    }
-
-    /**
      * calculate()
      * 
-     * Takes in inputs, runs those inputs through the network, and returns a list of outputs.
+     * Calculates an output based on the given data point.
      * 
-     * These outputs can be used to make a decision.
-     * 
-     * @param inputs
+     * @param dp - Data point.
      * @return
-     * @throws Exception
      */
-    public double[] calculate(double[] inputs) throws Exception {
+    public double[] calculate(DataPoint dp) {
 
-        if(m_numInputs != inputs.length) {
-            throw new Exception("The initial input size does not match the present number of inputs.");
-        }
+        assert dp.values.length == m_numInputs: " the number of inputs does not equal the number of inputs accepted by the network.";
+        assert dp.y.length == m_layers[m_layers.length - 1].getLayerSize(): " the number of outputs does not match the number of outputs returned by the network.";
 
-        // The last layer is the output layer.
-        double[] outputs = new double[m_layers[m_layers.length - 1].getLayerSize()];
-
-        // Loops through the layers and calculates the outputs of each.
-        for(int layer = 0; layer < m_networkSize; layer++) {
-
-            // If the first layer, calculate using the passed in inputs.
-            if(layer == 0) {
-
-                outputs = m_layers[layer].calculate(inputs);
-
-            // Else (not the first) calculate using the outputs from the previous layer.
-            } else {
-
-                outputs = m_layers[layer].calculate(outputs);
-
-            }
-
+        double[] outputs = m_layers[0].calculate(dp.values);
+        for(int l = 1; l < m_networkSize; l++) {
+            outputs = m_layers[l].calculate(outputs);
         }
 
         return outputs;
@@ -179,52 +105,131 @@ public class Network {
     }
 
     /**
-     * save()
+     * learn()
      * 
-     * Stores the network and all of its layers into the manifest folder.
+     * Given some batch of data and learn rate, create a gradient slope
+     * and update the biases and weights of each layer accordingly.
      * 
-     * Creates the manifest folder and all of its parent directories should it not exist.
+     * @param data - Data to create a gradient slope from.
+     * @param learnRate - The rate to descend the gradient slope.
+     * @return
      */
-    public void save() {
+    public double[][] learn(DataPoint[] data, double learnRate) {
 
-        try {
+        // The outputs for each data point
+        double[][] outputs = new double[data.length][data[0].y.length];
+        // Used to calculate the average cost over all given data points
+        double cost = 0;
 
-            // Creates all directories specified in the manifest folder.
-            File folder = new File(m_manifestFolder);
-            folder.mkdirs();
+        // Loop through the data points
+        for(int dp = 0; dp < data.length; dp++) {
 
-            for(int layer = 0; layer < m_networkSize; layer++) {
+            outputs[dp] = calculate(data[dp]);
 
-                m_layers[layer].save();
+            // Handles the output layer gradient
+            double[] errors = new double[m_layers[m_layers.length - 1].getLayerSize()];
+            for(int o = 0; o < data[dp].y.length; o++) {
+
+                double a = outputs[dp][o];
+                double y = data[dp].y[o];
+                double z = m_layers[m_layers.length - 1].getZVector()[o];
+
+                // dC/da * derivative of the activation function
+                errors[o] = (2 * (a - y)) * (Functions.dBipolarSigmoid(z));
+
+                cost += Math.pow(a - y, 2);
 
             }
+            
+            // Checks if the number of layers is greater than 1
+            if(m_layers.length > 1) {
 
-        } catch(Exception e) {
+                // Updates the output layer with its errors and the activations from the prior layer's output.
+                m_layers[m_layers.length - 1].updateGradient(errors, m_layers[m_layers.length - 2].getOutputVector());
 
-            System.out.println(e.getMessage());
+                // Handles all intermediate/hidden layers' gradients
+                for(int l = m_layers.length - 2; l >= 0; l--) {
 
-            System.exit(0);
+                    double[] previousErrors = errors.clone();
+                    double[][] outWeights = m_layers[l + 1].getWeights();
+                    errors = new double[m_layers[l].getLayerSize()];
+
+                    /*
+                     * The transpose of layer[L+1]'s weights multiplied against layer[L+1]'s errors
+                     * That product is then applied to a hadamard multiplication with layer[L]'s output 
+                     * vector (with no activation function applied)
+                     * The resulting hadamard product vector is an array of errors for layer[L]
+                     * This can be thought of as "moving the error backward through the network" - Nielsen's
+                     * work "Neural Networks and Deep Learning"
+                     */
+                    // Current node of layer[L]
+                    for(int cn = 0; cn < errors.length; cn++) {
+
+                        errors[cn] = 0;
+
+                        // "Next" node of layer[L+1]
+                        for(int nn = 0; nn < outWeights.length; nn++) {
+
+                            double w = outWeights[nn][cn];
+                            double e = previousErrors[nn];
+                            double z = m_layers[l].getZVector()[cn];
+
+                            /*
+                             * Essentially sums all of the weights of layer[L+1] that comes from all of layer[L]'s cn node.
+                             * layer[L+1]'s node[nn]'s weight to layer[L]'s cn node multiplied by layer[L+1]'s node[nn]'s error
+                             * multiplied by the derivative of the activation function calculated with layer[L]'s node[cn]'s
+                             * output without the activation function applied.
+                             */
+                            errors[cn] += w * e * Functions.dBipolarSigmoid(z);
+
+                        }
+
+                        errors[cn] = errors[cn] / outWeights.length;
+                        
+                    }
+
+                    // Special case for l=0 as it receives input from the data point itself
+                    if(l > 0) {
+                        m_layers[l].updateGradient(errors, m_layers[l - 1].getOutputVector());
+                    } else {
+                        m_layers[l].updateGradient(errors, data[dp].values);
+                    }
+
+                }
+                
+            // If the number of layers was 1...
+            } else {
+                m_layers[m_layers.length - 1].updateGradient(errors, data[dp].values);
+            }
 
         }
+
+        // Loops through all of the layers and applies their gradients
+        for(int l = m_layers.length - 1; l >= 0; l--) {
+
+            m_layers[l].applyGardient(data.length, learnRate);
+
+        }
+
+        m_cost = cost / data.length;
+
+        return outputs;
 
     }
 
     /**
-     * setManifestFolder
+     * clone()
      * 
-     * Sets the manifest folder to a location.
-     * 
-     * @param manifestFolder = Absolute path to the folder.
+     * Creates a copy of this neural network.
      */
-    public void setManifestFolder(String manifestFolder) {
+    public Network clone() {
 
-        m_manifestFolder = manifestFolder;
-
-        for(int layer = 0; layer < m_networkSize; layer++) {
-
-            m_layers[layer].setManifestFile(m_manifestFolder + "\\Layer_" + String.format("%03d", layer + 1));
-
+        Layer[] newLayers = new Layer[m_layers.length];
+        for(int l = 0; l < newLayers.length; l++) {
+            newLayers[l] = m_layers[l].clone();
         }
+
+        return new Network(new String(m_manifestFolder), m_networkSize, m_numInputs, m_layers);
 
     }
 

@@ -1,424 +1,298 @@
 //-----[IMPORTS]-----\\
 
-import java.io.File;
-import java.io.FileWriter;
-import java.util.ArrayList;
-import java.util.Scanner;
-
 //-----[CLASS]-----\\
 /**
  * Layer
  * Class
  * 
- * Serves as a group of nodes taking in a certain number of inputs and returning a certain number of outputs.
- * These groupings of nodes can be understood as the "curve" of a line where each node is a value on that line.
+ * A layer of nodes in the neural network.
  * 
- * @author savojosh
+ * @author Joshua Savoie
  */
 public class Layer {
 
     //-----[CONSTANTS]-----\\
 
-    /**
-     * OutputFunctions
-     * Enumeration
-     * 
-     * Allows layers to be versatile in that they can have different output functions applied to their inputs.
-     */
-    public static enum Functions {
+    // Used for weight regularization and generation
+    private static final double UPPER_THRESHOLD = 1.0;
+    private static final double LOWER_THRESHOLD = -1.0;
 
-        //-----[ENUM CONSTANTS]-----\\
-
-        BINARY_STEP("BINARY_STEP"),
-        SIGMOID("SIGMOID");
-
-        //-----[ENUM DEFINITION]-----\\
-
-        // Each layer saves the saveString at the top of their save files to denote the function used.
-        // Combined with an enum, the functions and save strings are standardized.
-        public final String saveString;
-
-        private Functions(String saveString) {
-            this.saveString = saveString;
-        }
-
-    }
-
-    // MIN AND MAX CHANGE FOR WEIGHTS AND BIASES
-    private static final double m_MAX = 1;
-    private static final double m_MIN = -1;
-    
     //-----[VARIABLES]-----\\
 
-    // Save file.
+    // Text file to store data to
     private String m_manifestFile;
 
-    // Size of the layer.
-    private int m_layerSize;
-    // How many inputs the layer takes in.
-    private int m_inputSize;
-    // The function the layer uses to calculate the node vector.
-    private Functions m_function;
+    // The number of nodes
+    private final int m_layerSize;
+    // The number of inputs
+    private final int m_numInputs;
 
-    // The bias for each node.
+    // Biases for each node
     private double[] m_biases;
-    // The weight for each input to every node.
+    // Weights for each node to each input
     private double[][] m_weights;
-    // The output values of each node when the layer's nodes were last calculated.
-    private double[] m_vector;
+
+    // The change for each bias to descend the gradient slope
+    private double[] m_biasesGradient;
+    // The change for each weight to each input to descend the gradient slope
+    private double[][] m_weightsGradient;
+
+    // The most recent outputs of the layer without applying the activation function
+    private double[] m_zVector;
+    // The most recent outputs with the activation function applied
+    private double[] m_outputVector;
 
     //-----[CONSTRUCTORS]-----\\
 
     /**
      * Layer
-     * Retrieve Layer Constructor
+     * Constructor
      * 
-     * Retrieves an existing layer of a network from a given manifest file.
+     * Creates a neural network layer.
      * 
-     * @param manifestFile
+     * @param manifestFile - Text file to store to.
+     * @param layerSize - Size of the layer.
+     * @param numInputs - The number of inputs going into the layer.
      */
-    public Layer(String manifestFile) {
-
-        m_manifestFile = manifestFile;
-        
-        try {
-
-            // Get file lines.
-
-            Scanner reader = new Scanner(new File(m_manifestFile));
-
-            ArrayList<String> lines = new ArrayList<String>();
-
-            while(reader.hasNextLine()) {
-                lines.add(reader.nextLine().strip());
-            }
-
-            // Gets the layer size (each line represents a node according to the save() function).
-            // 1 is subtracted due to the first line of the file being taken by the layer's activation function.
-            m_layerSize = lines.size() - 1;
-            // Gets the input size based on how many weights are present for the first node.
-            m_inputSize = lines.get(1).split(":")[1].split(",").length;
-            
-            // Searches for the function saved in the first line of the save file.
-            m_function = null;
-            for(Functions function : Functions.values()) {
-                if(lines.get(0).equals(function.saveString)) {
-                    m_function = function;
-                }
-            }
-            if(m_function == null) {
-                throw new Exception("No activation function found.");
-            }
-            
-            // Initializes the arrays to store layer-significant values.
-            m_vector = new double[m_layerSize];
-            m_biases = new double[m_layerSize];
-            m_weights = new double[m_layerSize][m_inputSize];
-
-            // Loops through the lines and gets the vector, bias, and weight values for each node.
-            for(int node = 0; node < m_layerSize; node++) {
-
-                String line = lines.get(node + 1);
-
-                String first = line.split(":")[0];
-                String stringV = first.split(",")[0];
-                String stringB = first.split(",")[1];
-
-                String second = line.split(":")[1];
-                String[] stringWs = second.split(",");
-
-                m_vector[node] = Double.parseDouble(stringV);
-                m_biases[node] = Double.parseDouble(stringB);
-
-                for(int weight = 0; weight < m_inputSize; weight++) {
-
-                    m_weights[node][weight] = Double.parseDouble(stringWs[weight]);
-
-                }
-
-            }
-
-        } catch(Exception e) {
-
-            System.out.println(e.getMessage());
-
-            System.exit(0);
-
-        }
-
-    }
-
-    /**
-     * Layer
-     * New Layer Constructor
-     * 
-     * Creates a neural network layer (thus creating curve) to add complexity to a network's functionality and resulting output(s).
-     * 
-     * @param manifestFile
-     * @param layerSize
-     * @param inputSize
-     * @param function
-     */
-    public Layer(String manifestFile, int layerSize, int inputSize, Functions function) {
+    public Layer(String manifestFile, int layerSize, int numInputs) {
 
         m_manifestFile = manifestFile;
 
         m_layerSize = layerSize;
-        m_inputSize = inputSize;
-        m_function = function;
+        m_numInputs = numInputs;
 
         m_biases = new double[m_layerSize];
-        m_weights = new double[m_layerSize][m_inputSize];
+        m_weights = new double[m_layerSize][m_numInputs];
 
-        // Sets all biases to 0.
-        for(int bias = 0; bias < m_layerSize; bias++) {
-            m_biases[bias] = 0;
-        }
+        m_biasesGradient = new double[m_layerSize];
+        m_weightsGradient = new double[m_layerSize][m_numInputs];
 
-        // Randomly generates a weight for each input of each node ranging from m_MAX to m_MIN.
-        for(int node = 0; node < m_layerSize; node++) {
+        // Sets all of the initial values for the weights and biases
+        for(int n = 0; n < m_layerSize; n++) {
 
-            for(int weight = 0; weight < m_inputSize; weight++) {
+            m_biases[n] = 0;
+            m_biasesGradient[n] = 0;
 
-                m_weights[node][weight] = Math.random() * (m_MAX - m_MIN) + m_MIN;
-
+            for(int w = 0; w < m_numInputs; w++) {
+                // Generates a weight value between the upper and lower thresholds.
+                m_weights[n][w] = Math.random() * (UPPER_THRESHOLD - LOWER_THRESHOLD) + LOWER_THRESHOLD;
+                m_weightsGradient[n][w] = 0;
             }
-
         }
+    }
+
+    /**
+     * Layer
+     * Constructor
+     * 
+     * Constructor only meant for copying a layer.
+     * 
+     * @param manifestFile
+     * @param layerSize
+     * @param numInputs
+     * @param biases
+     * @param weights
+     * @param biasesGradient
+     * @param weightsGradient
+     * @param zVector
+     * @param outputVector
+     */
+    private Layer(
+        String manifestFile, int layerSize, int numInputs, 
+        double[] biases, double[][] weights, 
+        double[] biasesGradient, double[][] weightsGradient, 
+        double[] zVector, double[] outputVector
+    ) {
+        m_manifestFile = manifestFile;
+        m_layerSize = layerSize;
+        m_numInputs = numInputs;
+        m_biases = biases;
+        m_weights = weights;
+        m_biasesGradient = biasesGradient;
+        m_weightsGradient = weightsGradient;
+        m_zVector = zVector;
+        m_outputVector = outputVector;
     }
 
     //-----[METHODS]-----\\
 
     /**
-     * update()
-     * 
-     * Changes all of the weights and biases synchronously with 
-     * the actual and desired scores acting as a multiplier to the changes.
-     * 
-     * @param actualScore
-     * @param desiredScore
-     */
-    public void update(int actualScore, int desiredScore) {
-
-        // Difference between the desired score and the score the network received.
-        int difference = desiredScore - actualScore;
-        // Creates a divisor that will divide the difference by how many ever digits the difference has to make it into a decimal.
-        double divisor = 1;
-        for(int i = 0; i < Integer.toString(difference).length(); i++) {
-            divisor *= 10;
-        }
-        // Actually performs the division.
-        // The multiplier ranges from 0 to 1. Add or subtract to the comparison in the for loop to change this range.
-        double multiplier = difference / divisor;
-
-        // How precise biases and weights should be.
-        // 7 zeros = 7 decimal places.
-        double precision = 10000000;
-
-        // Updates the biases.
-        for(int bias = 0; bias < m_layerSize; bias++) {
-
-            double proposed = Math.round(
-                (m_biases[bias] + (Math.random() * (m_MAX - m_MIN) + m_MIN) * multiplier) * precision
-            ) / precision;
-
-            // Ensures that biases are contained within the min and max values.
-            // If the proposed new value is not within the min and max, no change occurs to that bias.
-            if(proposed > m_MIN && proposed < m_MAX) {
-                m_biases[bias] = proposed;
-            }
-
-        }
-
-        // Updates the weights.
-        for(int node = 0; node < m_layerSize; node++) {
-
-            for(int weight = 0; weight < m_inputSize; weight++) {
-
-                double proposed = Math.round(
-                    (m_weights[node][weight] + (Math.random() * (m_MAX - m_MIN) + m_MIN) * multiplier) * precision
-                ) / precision;
-                
-                // Ensures that weights are contained within the min and max values.
-                // If the proposed new value is not within the min and max, no change occurs to that weight.
-                if(proposed > m_MIN && proposed < m_MAX) {
-                    m_weights[node][weight] = proposed;
-                }
-
-            }
-
-        }
-
-    }
-
-    /**
      * calculate()
      * 
-     * Calculates the outputs for a neural network layer based on given inputs and a given activation function.
+     * Given some inputs, calculate the outputs for each node in this layer.
      * 
-     * Inputs should doubles ranging from -1.000 to +1.000 in value.
-     * 
-     * @param inputs
+     * @param inputs - The input values into the layer.
      * @return
-     * @throws Exception
      */
-    public double[] calculate(double[] inputs) throws Exception {
+    public double[] calculate(double[] inputs) {
 
-        if(m_inputSize != inputs.length) {
-            throw new Exception("The initial input size does not match the present number of inputs.");
-        }
+        assert m_numInputs == inputs.length: " the input size of the layer and the number of inputs do not match.";
 
-        // The output vector.
+        // Outputs with activation function
         double[] outputs = new double[m_layerSize];
+        // Outputs without activation function
+        m_zVector = new double[m_layerSize];
 
-        // Loops through the nodes and calculates each nodes output.
-        for(int node = 0; node < m_layerSize; node++) {
+        // summation(w * i + b)
+        for(int n = 0; n < m_layerSize; n++) {
+            
+            double out = m_biases[n];
 
-            double output = m_biases[node];
-
-            // output = summation(w * i) + bias
-            for(int input = 0; input < m_inputSize; input++) {
-
-                output += m_weights[node][input] * inputs[input];
-
+            for(int i = 0; i < m_numInputs; i++) {
+                out += (m_weights[n][i] * inputs[i]);
             }
 
-            // Applies an activation function to the output.
-            switch(m_function) {
+            m_zVector[n] = out;
 
-                case BINARY_STEP:
-                    // 1 if the output >= 0.
-                    // 0 if the output < 0.
-                    outputs[node] = (output >= 0 ? 1 : 0);
-                    break;
-
-                case SIGMOID:
-                    // y = 1 / (1 + e^(-x))
-                    outputs[node] = 1 / (1 + Math.pow(Math.E, -output));
-                    break;
-
-            }
+            // Applies the activation function
+            outputs[n] = Functions.bipolarSigmoid(out);
 
         }
 
-        // Stores the output vector for history tracking in save files.
-        m_vector = outputs.clone();
+        // Stores a copy of the output vector with the activation function applied
+        m_outputVector = outputs.clone();
+
         return outputs;
 
     }
 
     /**
-     * save()
+     * updateGradient()
      * 
-     * Saves a layer to file.
+     * Updates the gradient slope according to this layer's (L) error and the previous layer's (L-1) activations.
+     * 
+     * @param errors - This layer's (L) error.
+     * @param previousActivations - The previous layer's (L-1) activations.
      */
-    public void save() {
+    public void updateGradient(double[] errors, double[] previousActivations) {
 
-        try {
+        assert errors.length == m_layerSize: " the number of errors does not match the number of nodes.";
+        assert previousActivations.length == m_numInputs: " the number of activations provided does not match the number of inputs to this layer.";
+        
+        for(int n = 0; n < m_layerSize; n++) {
 
-            // Creates the manifest file if it doesn't already exist.
-            File file = new File(m_manifestFile);
-            file.createNewFile();
+            // dC/db = error
+            // Change of cost in terms of bias equals the node's error
+            m_biasesGradient[n] += (errors[n]);
 
-            // false = Overwrites any existing content of the file.
-            FileWriter writer = new FileWriter(file, false);
-
-            String output = new String("");
-            String[] lines = getEntries();
-
-            // Combines all of the entires into one string.
-            for(int line = 0; line < lines.length; line++) {
-
-                if(line == lines.length - 1) {
-
-                    output += lines[line];
-
-                } else {
-
-                    output += lines[line] + "\n";
-
-                }
+            // dC/dw = activation * error
+            // Change of cost in terms of weight equals the previous layer's activation multiplied by the node's error
+            for(int w = 0; w < m_numInputs; w++) {
+                m_weightsGradient[n][w] += (previousActivations[w] * errors[n]);
             }
-
-            // Writes the string to the file.
-            writer.write(output);
-
-            writer.close();
-
-        } catch(Exception e) {
-
-            System.out.println(e.getMessage());
-
-            System.exit(0);
-
         }
-
 
     }
 
     /**
-     * getEntries()
+     * applyGradient()
      * 
-     * Returns a list of strings in "layer save" format.
+     * Applies the gradient to the layer.
+     * 
+     * @param miniBatchSize - The size of the training mini-batch.
+     * @param learnRate - The rate to descend the gradient slope.
+     */
+    public void applyGardient(int miniBatchSize, double learnRate) {
+
+        for(int n = 0; n < m_layerSize; n++) {
+
+            // Change
+            double d = 0;
+
+            // Averages the gradient against the size of the mini-batch size.
+            // Equivalent to storing all of the gradients from each training data point but saves a lot of space.
+            d = m_biasesGradient[n] / miniBatchSize * learnRate;
+
+            // Bias regularization after exceeding a threshold
+            if(
+                (m_biases[n] > UPPER_THRESHOLD && d > 0) ||
+                (m_biases[n] < LOWER_THRESHOLD && d < 0)
+            ) {
+                m_biases[n] -= (d * (1.0 / Math.abs(m_biases[n])));
+            } else {
+                m_biases[n] -= d;
+            }
+
+            m_biasesGradient[n] = 0;
+
+            for(int w = 0; w < m_numInputs; w++) {
+
+                d = m_weightsGradient[n][w] / miniBatchSize * learnRate;
+
+                // Weight regularization after exceeding a threshold
+                if(
+                    (m_weights[n][w] > UPPER_THRESHOLD && d > 0) ||
+                    (m_weights[n][w] < LOWER_THRESHOLD && d < 0)
+                ) {
+                    m_weights[n][w] -= (d * (1.0 / Math.abs(m_weights[n][w])));
+                } else {
+                    m_weights[n][w] -= d;
+                }
+
+                m_weightsGradient[n][w] = 0;
+
+            }
+        }
+    }
+
+    /**
+     * getZVector()
+     * 
+     * Gets the outputs of the layer without the activation function applied.
      * 
      * @return
      */
-    public String[] getEntries() {
-
-        String[] entries = new String[m_layerSize + 1];
-
-        // Stores the activation function.
-        entries[0] = m_function.saveString;
-
-        // Loops through the nodes and saves their value, bias, and weights.
-        for(int node = 0; node < m_layerSize; node++) {
-
-            entries[node + 1] = String.format("%.7f", m_vector[node]) + "," + String.format("%.7f", m_biases[node]) + ":";
-
-            for(int weight = 0; weight < m_inputSize; weight++) {
-
-                // If the last weight in the layer:
-                if(weight == m_inputSize - 1) {
-                    entries[node + 1] += String.format("%.7f", m_weights[node][weight]);
-
-                // Else (not the last):
-                } else {
-                    entries[node + 1] += String.format("%.7f", m_weights[node][weight]) + ",";
-                }
-
-            }
-
-        }
-
-        return entries;
-
+    public double[] getZVector() {
+        return m_zVector.clone();
     }
 
     /**
-     * setManifestFile()
+     * getOutputVector()
      * 
-     * @param manifestFile
-     */
-    public void setManifestFile(String manifestFile) {
-        m_manifestFile = manifestFile;
-    }
-
-    /**
-     * getInputSize()
+     * Gets the outputs of the layeer with the activation function applied.
      * 
      * @return
      */
-    public int getInputSize() {
-        return m_inputSize;
+    public double[] getOutputVector() {
+        return m_outputVector.clone();
+    }
+
+    /**
+     * getWeights()
+     * 
+     * Gets the weights of the layer.
+     * 
+     * @return
+     */
+    public double[][] getWeights() {
+        return m_weights.clone();
     }
 
     /**
      * getLayerSize()
      * 
+     * Gets the size of the layer.
+     * 
      * @return
      */
     public int getLayerSize() {
         return m_layerSize;
+    }
+
+    /**
+     * copy()
+     * 
+     * Returns a copy of the scoped layer.
+     * 
+     * @return
+     */
+    public Layer clone() {
+        return new Layer(
+            new String(m_manifestFile), m_layerSize, m_numInputs, 
+            m_biases.clone(), m_weights.clone(), 
+            m_biasesGradient.clone(), m_weightsGradient.clone(), 
+            m_zVector.clone(), m_outputVector.clone()
+        );
     }
 
 }
