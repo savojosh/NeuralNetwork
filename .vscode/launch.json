@@ -5,17 +5,18 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "java",
-            "name": "Launch Current File",
+            "name": "Current Python File",
+            "type": "debugpy",
             "request": "launch",
-            "mainClass": "${file}"
+            "program": "${file}",
+            "console": "integratedTerminal"
         },
         {
-            "type": "java",
-            "name": "Launch Main",
+            "name": "Main Python File",
+            "type": "debugpy",
             "request": "launch",
-            "mainClass": "Main",
-            "projectName": "NeuralNetwork_dc52dc00"
+            "program": "${workspaceFolder}/src/Main.py",
+            "console": "integratedTerminal"
         }
     ]
 }
