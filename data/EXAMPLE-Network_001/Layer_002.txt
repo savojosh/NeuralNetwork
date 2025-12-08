@@ -1,6 +1,0 @@
-SIGMOID
-node1,bias1:weight11,weight21,weight31,...,weightn1
-node2,bias2:weight12,weight22,weight32,...,weightn2
-node3,bias3:weight13,weight23,weight33,...,weightn3
-...
-noden,biasn:weight1n,weight2n,weight3n,...,weightnn
