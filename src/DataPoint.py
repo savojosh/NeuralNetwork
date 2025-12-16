@@ -2,6 +2,10 @@ from pandas import Series
 from enum import Enum
 from math import isinf, isnan
 
+class _Separator(Enum):
+    KEY_SEPARATOR = ";"
+    ATTRIBUTE_SEPARATOR = ","
+
 class _Prefix(Enum):
     Y = "y"
     VALUES = "v"
@@ -10,18 +14,17 @@ class DataPoint:
     
     #-------------[ CONSTRUCTORS ]-------------#
 
-    def __init__(self, y: list[float], values: list[float]) -> None:
+    def __init__(self, y: list[float], values: list[float]) -> object:
         
         self.values = values
         self.y = y
-        self.label = max(range(len(y)), key=y.__getitem__)
 
     @classmethod
     def fromString(cls, dpString: str) -> object:
-        yStr, vStr = dpString.split(";")
+        yStr, vStr = dpString.split(_Separator.KEY_SEPARATOR)
         return cls(
-            [float(y) for y in yStr.split(",")],
-            [float(v) for v in vStr.split(",")]
+            [float(y) for y in yStr.split(_Separator.ATTRIBUTE_SEPARATOR)],
+            [float(v) for v in vStr.split(_Separator.ATTRIBUTE_SEPARATOR)]
         )
     
     @classmethod
@@ -42,16 +45,29 @@ class DataPoint:
     
         return cls(y, values)
 
-    #-------------[ OBJECT CONVERSION ]-------------#
-
-    def __len__(self) -> int:
-        return len(self.values)
+    #-------------[ OBJECT DESCRIPTORS ]-------------#
 
     def __str__(self) -> str:
-        return ";".join([
-            ",".join([str(i) for i in self.y]), 
-            ",".join([str(i) for i in self.values])
+        return _Separator.KEY_SEPARATOR.join([
+            _Separator.ATTRIBUTE_SEPARATOR.join([str(i) for i in self.y]), 
+            _Separator.ATTRIBUTE_SEPARATOR.join([str(i) for i in self.values])
         ])
+    
+    @property
+    def shape(self) -> tuple[int, int]:
+        return (len(self.y), len(self.values))
+    
+    @property
+    def ySize(self) -> int:
+        return len(self.y)
+    
+    @property
+    def xSize(self) -> int:
+        return len(self.values)
+    
+    @property
+    def label(self) -> int:
+        return max(range(self.ySize), key=self.y.__getitem__)
 
     def toSeries(self) -> Series:
 

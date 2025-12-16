@@ -1,160 +1,121 @@
 import os
-import Functions
+import MathFunctions
+from pandas import read_csv
 from DataPoint import DataPoint
 from Layer import Layer
+from Tools import *
+from typing import Callable
+from shutil import rmtree
 
 class Network:
-    
-    def __init__(self, manifestFolder: str, numInputs: int, layerSizes: list=None):
-        
-        self.manifestFolder = manifestFolder.replace("\\", "/")
-        self.numInputs = numInputs
-        self.layers = []
-        self.performance = 0.0
-        self.cost = 0.0
-        
-        if(os.path.isdir(self.manifestFolder)):
-            
-            files = os.listdir(self.manifestFolder)
-            files = [(self.manifestFolder + "/" + f) for f in files if os.path.isfile(self.manifestFolder + '/' + f)]
-            
-            for f in files:
-                
-                with open(f, "r") as file:
-                                        
-                    lines = file.readlines()
-                    
-                    sBiases = []
-                    sWeights = []
-                    
-                    for l in lines:
-                        
-                        l = l.strip()
-                        sBiases.append(float(l.split(";")[0]))
-                        sWeights.append([float(w) for w in l.split(";")[1].split(",")])
-                        
-                    self.layers.append(Layer(
-                        file.name.replace("\\", "/"),
-                        len(sBiases),
-                        len(sWeights[0]),
-                        biases=sBiases,
-                        weights=sWeights
-                    ))
-                    
-                    file.close()  
-        
-        else:
-                    
-            self.layers.append(Layer(
-                self.manifestFolder + "/Layer_" + f'{1:02d}' + ".txt",
-                layerSizes[0],
-                self.numInputs
-            ))
-            
-            for l in range(1, len(layerSizes)):
-                
+
+    #-------------[ CONSTRUCTORS ]-------------#
+
+    def __init__(self, inputSize: int, layerSizes: list[int]|tuple[int], layers: list[Layer]=None, lower: float=0, upper: float=1) -> object:
+
+        if(layers is None):
+            self.layers = []
+            inputs = inputSize
+            for ls in layerSizes:
                 self.layers.append(Layer(
-                    manifestFile = self.manifestFolder + "/Layer_" + f"{l + 1:02d}" + ".txt",
-                    layerSize = layerSizes[l],
-                    numInputs = layerSizes[l - 1]
+                    size=ls, inputSize=inputs, lower=lower, upper=upper
                 ))
+                inputs = ls
+        else:
+            self.layers = layers
+
+    @classmethod
+    def fromFolder(cls, folder: str):
+        layers = []
+        for p in os.listdir(folder):
+            path = buildPath(folder, p)
+            if(os.path.isfile(path)):
+                layers.append(Layer.fromDataFrame(read_csv(path, index_col=0)))
+
+        assert len(layers) > 0
+
+        return cls(0, 0, layers)
+
+    def copy(self) -> object:
+        copiedLayers = [l.copy() for l in self.layers]
+        return Network(layers=copiedLayers)
+
+    #-------------[ OBJECT DESCRIPTORS ]-------------#
+
+    def __len__(self) -> int:
+        return len(self.layers)
+    
+    @property
+    def shape(self) -> tuple:
+        return tuple(len(l) for l in self.layers)
+    
+    @property
+    def size(self) -> int:
+        return sum(l.size for l in self.layers)
+    
+    @property
+    def inputSize(self) -> int:
+        return self.layers[0].shape[1]
+    
+    #-------------[ CLASS FUNCTIONS ]-------------#
         
-        self.networkSize = len(self.layers)
+    def calculate(self, dp: DataPoint, activationFunction: Callable[[float, bool], float], adjustSize: bool=False):
         
-    def calculate(self, dp: DataPoint):
+        if(not adjustSize):
+            assert self.layers[0].shape[1] == dp.xSize
+            assert self.layers[len(self.layers) - 1].shape[0] == dp.ySize
         
-        assert self.numInputs == len(dp.values)
-        assert self.layers[len(self.layers) - 1].layerSize == len(dp.y)
+        outputs = self.layers[0].calculate(dp.values, activationFunction, adjustSize)
         
-        outputs = self.layers[0].calculate(dp.values)
-        
-        for l in range(1, self.networkSize):
+        for l in range(1, len(self.layers)):
             
-            outputs = self.layers[l].calculate(outputs)
+            outputs = self.layers[l].calculate(outputs, activationFunction, adjustSize)
 
         return outputs
     
-    def learn(self, data: list, learnRate: float):
-        
-        outputs = []
-        cost = 0.0
-        
-        for dp in range(len(data)):
-            
-            # if(dp != 0 and dp % int(len(data) / 3) == 0): 
-            #     # print(f'{dp:05d}')
-            #     self.cost = cost / dp
-            #     print("  " + f'{self.cost:.5f}')
+    def learn(self, data: list[DataPoint], activationFunction: Callable[[float, bool], float], learnRate: float, adjustSize: bool=False):
 
-            outputs.append(self.calculate(data[dp]))
-            errors = []
-            
-            for o in range(len(data[dp].y)):
-                
-                a = outputs[dp][o]
-                y = data[dp].y[o]
-                z = self.layers[len(self.layers) - 1].zVector[o]
-                
-                errors.append((2 * (a - y)) * (Functions.dBipolarSigmoid(z)))
-                
-                cost += pow(a - y, 2)
-                
-            if(len(self.layers) > 1):
-                
-                self.layers[len(self.layers) - 1].updateGradient(errors, self.layers[len(self.layers) - 2].outputVector)
+        cost = 0
+        expectedDistribution = [0 for i in range(data[0].ySize)]
+        chosenDistribution = [0 for i in range(data[0].ySize)]
+        correctDistribution = [0 for i in range(data[0].ySize)]
+        # correctDistribution = [0,0,0] # decrease, no change, increase
+        # outputDistribution = [0,0,0]
 
-                for l in range(len(self.layers) - 2, -1, -1):
-                    
-                    previousErrors = errors.copy()
-                    outWeights = self.layers[l + 1].weights
-                    errors = []
-                    
-                    for cn in range(self.layers[l].layerSize):
-                        
-                        errors.append(0.0)
-                        
-                        for nn in range(len(outWeights)):
-                            
-                            w = outWeights[nn][cn]
-                            e = previousErrors[nn]
-                            z = self.layers[l].zVector[cn]
-                            
-                            errors[cn] += w * e * Functions.dBipolarSigmoid(z)
-                        
-                        errors[cn] = errors[cn] / len(outWeights)
-                        
-                    if(l > 0):
-                        
-                        self.layers[l].updateGradient(errors, self.layers[l - 1].outputVector)
-                        
-                    else:
-                        
-                        self.layers[l].updateGradient(errors, data[dp].values)
-                    
-            else:
-                
-                self.layers[len(self.layers) - 1].updateGradient(errors, data[dp].values)
-            
+        for d in data:
+
+            outputs = self.calculate(d, activationFunction, adjustSize)
+            errors = [MathFunctions.mse(a, y, derivative=True) for a, y in zip(outputs, d.y)]
+
+            for l in reversed(range(len(self.layers))):
+                backwardOutputs = self.layers[l - 1].activatedOutputs if l > 0 else d.values
+                errors = self.layers[l].updateGradient(activationFunction, errors, backwardOutputs)
+
+            cost += MathFunctions.average([MathFunctions.mse(a, y, derivative=False) for a, y in zip(outputs, d.y)])
+
+            expectedDistribution[d.label] += 1
+            choice = max(range(len(outputs)), key=outputs.__getitem__)
+            chosenDistribution[choice] += 1
+            correctDistribution[choice] += (1 if d.label == choice else 0)
+            # guessed = 2 if outputs[0] > 0 else (0 if outputs[0] < 0 else 1)
+            # answer = 2 if d.y[0] > 0 else (0 if d.y[0] < 0 else 1)
+            # outputDistribution[guessed] += 1
+            # correctDistribution[answer] += 1
+            # correct += 1 if guessed == answer else 0
+
         for l in self.layers:
-            
             l.applyGradient(len(data), learnRate)
-                
-        self.cost = cost / len(data)
-        
-        return outputs
+
+        cost /= len(data)
+
+        return (cost, sum(correctDistribution) / len(data), expectedDistribution, chosenDistribution, correctDistribution)
     
-    def save(self):
+    def save(self, folder: str):
         
-        os.makedirs(self.manifestFolder, exist_ok=True)
-        
-        for l in range(self.networkSize):
-            
-            self.layers[l].save()
-            
-    def setManifestFolder(self, manifestFolder: str):
-        
-        self.manifestFolder = manifestFolder.replace("\\", "/")
+        rmtree(folder, ignore_errors=True) 
+        os.makedirs(folder, exist_ok=True)
         
         for l in range(len(self.layers)):
             
-            self.layers[l].manifestFile = self.manifestFolder + "/Layer_" + f'{l:02d}' + ".txt"
+            self.layers[l].toDataFrame().to_csv(buildPath(folder, f"Layer_{l:02}.csv"))
+                        
