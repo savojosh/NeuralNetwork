@@ -70,7 +70,12 @@ class Layer:
         
         biases = []
         weights = []
+        c = 0
+        
         for col in df:
+
+            weights.append([])
+
             for i, v in df[col].items():
                 if(isinf(float(v)) or isnan(float(v))):
                     raise ValueError(f"Value {v} is either infinite or nan.")
@@ -78,9 +83,11 @@ class Layer:
                     case _Prefix.BIAS.value:
                         biases.append(float(v))
                     case _Prefix.WEIGHT.value:
-                        weights.append(float(v))
+                        weights[c].append(float(v))
                     case _:
                         raise KeyError(f"Index {i} does not match any of the enumerated keys: {[e.value for e in _Prefix]}")
+            
+            c += 1
 
         return cls(len(biases), len(weights[0]), biases, weights)
     
