@@ -79,8 +79,6 @@ class Network:
         expectedDistribution = [0 for i in range(data[0].ySize)]
         chosenDistribution = [0 for i in range(data[0].ySize)]
         correctDistribution = [0 for i in range(data[0].ySize)]
-        # correctDistribution = [0,0,0] # decrease, no change, increase
-        # outputDistribution = [0,0,0]
 
         for d in data:
 
@@ -97,11 +95,6 @@ class Network:
             choice = max(range(len(outputs)), key=outputs.__getitem__)
             chosenDistribution[choice] += 1
             correctDistribution[choice] += (1 if d.label == choice else 0)
-            # guessed = 2 if outputs[0] > 0 else (0 if outputs[0] < 0 else 1)
-            # answer = 2 if d.y[0] > 0 else (0 if d.y[0] < 0 else 1)
-            # outputDistribution[guessed] += 1
-            # correctDistribution[answer] += 1
-            # correct += 1 if guessed == answer else 0
 
         for l in self.layers:
             l.applyGradient(len(data), learnRate)

@@ -39,7 +39,6 @@ def tanh(x: float, derivative: bool=False) -> float:
 
     if(derivative):
         return 1 - pow(tanh(x, derivative=False), 2)
-            # TODO: Derivative for the smht is wrong here.
     
     return (pow(math.e, x) - pow(math.e, -x)) / (pow(math.e, x) + pow(math.e, -x))
 
