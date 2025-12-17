@@ -135,27 +135,26 @@ class Layer:
                 
     def calculate(self, inputs: list, activationFunction: Callable[[float, bool], float], adjustSize: bool=False):
         
-        if(adjustSize):
-            if(len(self) < len(inputs)):
-                del self.biases[-1]
-                del self.biasesGradient[-1]
-                for n in range(len(self.weights)):
-                    del self.weights[n][-1]
-                    del self.weightsGradient[n][-1]
-                    
-            elif(len(self) > len(inputs)):
-                self.biases.append(0.0)
-                self.biasesGradient.append(0.0)
-                for n in range(len(self.weights)):
-                    self.weights[n].append(0.0)
-                    self.weightsGradient[n].append(0.0)
-
-        assert self.shape[1] == len(inputs)
-        
+        nodes, weightsPerNode = self.shape
         self.rawOutputs = []
         self.activatedOutputs = []
+        
+        if(adjustSize):
 
-        nodes, weightsPerNode = self.shape
+            if(self.shape[1] < len(inputs)):
+                for j in range(nodes):
+                    for k in range(weightsPerNode - 1, len(inputs)):
+                        del self.weights[j][-1]
+                        del self.weightsGradient[j][-1]                    
+                    
+            elif(self.shape[1] > len(inputs)):
+                for j in range(nodes):
+                    for k in range(weightsPerNode - 1, len(inputs)):
+                        self.weights[j].append(0.0)
+                        self.weightsGradient[j].append(0.0) 
+
+        assert self.shape[1] == len(inputs)
+
         for j in range(nodes):
             out = self.biases[j]
             for k in range(weightsPerNode):
